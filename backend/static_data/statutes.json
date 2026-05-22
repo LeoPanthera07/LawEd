@@ -1,0 +1,110 @@
+{
+  "BNS": [
+    {
+      "section_number": "318",
+      "section_title": "Cheating and Dishonestly Inducing Delivery of Property",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security, or anything which is signed or sealed, and which is capable of being converted into a valuable security.",
+      "punishment": "Imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine.",
+      "evidence_required": [
+        "Proof of false representation or deceptive promise made by the accused.",
+        "Evidence of delivery of property or money (bank receipts, screenshots, cash receipts).",
+        "Proof of dishonest intention (mens rea) existing at the time of transaction (emails, chat logs, call recordings)."
+      ]
+    },
+    {
+      "section_number": "303",
+      "section_title": "Theft",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever, intending to take dishonestly any movable property out of the possession of any person without that person's consent, moves that property in order to such taking, is said to commit theft.",
+      "punishment": "Imprisonment of either description for a term which may extend to three years, or with fine, or with both, and in the case of a second or subsequent conviction, with rigorous imprisonment which may extend to five years and with fine.",
+      "evidence_required": [
+        "Proof that the property was movable and was in possession of the complainant.",
+        "Proof that it was taken without consent (CCTV footage, eye-witness testimonies).",
+        "Dishonest intention to take the property out of possession."
+      ]
+    },
+    {
+      "section_number": "316",
+      "section_title": "Criminal Breach of Trust",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever, being in any manner entrusted with property, or with any dominion over property, dishonestly misappropriates or converts to his own use that property, or dishonestly uses or disposes of that property in violation of any direction of law prescribing the mode in which such trust is to be discharged.",
+      "punishment": "Imprisonment of either description for a term which may extend to five years, or with fine, or with both.",
+      "evidence_required": [
+        "Proof of entrustment of property or dominion over property to the accused.",
+        "Evidence of dishonest misappropriation, conversion, or disposal of the property by the accused (ledger logs, bank accounts, sale receipts).",
+        "Violation of contract or express direction of trust."
+      ]
+    },
+    {
+      "section_number": "356",
+      "section_title": "Defamation",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever, by words either spoken or intended to be read, or by signs or by visible representations, makes or publishes any imputation concerning any person intending to harm, or knowing or having reason to believe that such imputation will harm, the reputation of such person.",
+      "punishment": "Simple imprisonment for a term which may extend to two years, or with fine, or with both, or with community service.",
+      "evidence_required": [
+        "Proof of publication of defamatory statements (screenshots of social media, news clippings, recordings).",
+        "Proof that the statement refers specifically to the complainant.",
+        "Proof of harm to reputation or malicious intent to defame."
+      ]
+    },
+    {
+      "section_number": "329",
+      "section_title": "Criminal Trespass",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever enters into or upon property in the possession of another with intent to commit an offence or to intimidate, insult or annoy any person in possession of such property, or having lawfully entered, unlawfully remains there.",
+      "punishment": "Imprisonment of either description for a term which may extend to three months, or with fine which may extend to five thousand rupees, or with both.",
+      "evidence_required": [
+        "Proof of complainant's exclusive possession of the property (land records, lease deed).",
+        "Unauthorized entry or remaining unlawfully by the accused (photographs, eye-witnesses).",
+        "Intent to commit an offense, intimidate, insult, or annoy."
+      ]
+    }
+  ],
+  "BNSS": [
+    {
+      "section_number": "173",
+      "section_title": "Information in Cognizable Cases (First Information Report)",
+      "act_title": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      "description": "Every information relating to the commission of a cognizable offence, if given orally to an officer in charge of a police station, shall be reduced to writing by him or under his direction. This section also permits electronic communications (e-FIR) which must be signed by the informant within three days.",
+      "procedural_route": "Filing an FIR (First Information Report) at the local Police Station or online (e-FIR). The police must register it, provide a free copy to the informant, and initiate an investigation. If police refuse to register, the informant can send the grievance to the Superintendent of Police (SP) under Section 173(4)."
+    },
+    {
+      "section_number": "223",
+      "section_title": "Complaint to Magistrate",
+      "act_title": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      "description": "A Magistrate having jurisdiction may take cognisance of an offence on receiving a complaint of facts which constitute such offence, and examine the complainant and the witnesses present under oath.",
+      "procedural_route": "Filing a Private Criminal Complaint directly in the Court of the Judicial Magistrate. The Magistrate examines the complainant under oath, records statement, and if satisfied of a prima facie case, issues summons/warrants to the accused under Section 227 BNSS."
+    },
+    {
+      "section_number": "283",
+      "section_title": "Power of Magistrate to Try Summarily",
+      "act_title": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+      "description": "Any Chief Judicial Magistrate or Metropolitan Magistrate may, if he thinks fit, try in a summary way all or any of the petty offences like theft (property value under Rs. 20,000), criminal trespass, insult, and simple hurts.",
+      "procedural_route": "Summary Trial procedure, designed for swift judicial disposal. Trials are conducted rapidly, and the maximum sentence of imprisonment awarded cannot exceed three months."
+    }
+  ],
+  "BSA": [
+    {
+      "section_number": "4",
+      "section_title": "Relevancy of Facts",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Evidence may be given in any suit or proceeding of the existence or non-existence of every fact in issue and of such other facts as are hereinafter declared to be relevant, and of no others.",
+      "evidence_rule": "Establishes what facts can be presented in court. Fact must directly support the claim (e.g. transfer of money in cheating) or dispute the opponent's assertion."
+    },
+    {
+      "section_number": "63",
+      "section_title": "Admissibility of Electronic Records",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Any information contained in an electronic record which is printed on a paper, stored, recorded or copied in optical or magnetic media produced by a computer shall be deemed to be also a document and shall be admissible in any proceedings, without further proof or production of the original, if the conditions mentioned in this section are satisfied (including a mandatory Certificate to prove device integrity).",
+      "evidence_rule": "Requires a signed Electronic Evidence Certificate (similar to old 65B IEA certificate) for screenshots, PDFs, emails, or call recordings to be legally admissible. The certificate must confirm that the device was operating properly when the record was captured."
+    },
+    {
+      "section_number": "104",
+      "section_title": "Burden of Proof",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Whoever desires any Court to give judgment as to any legal right or liability dependent on the existence of facts which he asserts, must prove that those facts exist.",
+      "evidence_rule": "The burden of proving a specific fact lies on the party who makes the claim. If a user claims cheating, they must prove the deceptive inducement occurred; the defendant does not have to prove their innocence until a prima facie case is made."
+    }
+  ]
+}
