@@ -13,6 +13,9 @@ pip-delete-this-directory.txt
 # Databases & local data
 backend/data/*.db
 backend/data/*.db-journal
+backend/data/uploads/
+*.db
+*.db-journal
 
 # Environment secrets
 .env

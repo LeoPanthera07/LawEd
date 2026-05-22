@@ -95,7 +95,7 @@ def run_legal_agent(db: Session, case_id: int, api_key: str = None, provider: st
     for item in matched_statutes:
         ref = LegalReference(
             case_id=case_id,
-            code_type="BNS" if "BNS" in item.get("act_title", "") else ("BNSS" if "BNSS" in item.get("act_title", "") else "BSA"),
+            code_type="BNS" if "Nyaya" in item.get("act_title", "") or "BNS" in item.get("act_title", "") else ("BNSS" if "Nagarik" in item.get("act_title", "") or "BNSS" in item.get("act_title", "") else "BSA"),
             section_number=item["section_number"],
             section_title=item["section_title"],
             act_title=item["act_title"],

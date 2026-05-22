@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LawEdAI - The premium multi-agent pre-filing legal case builder and LLM courtroom simulator for BNS, BNSS, and BSA Indian statutes.">
+    <title>LawEdAI — Premium Legal Intake & Court Simulation</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="/assets/styles/index.css">
+</head>
+<body class="theme-dark font-inter">
+    <!-- App Container -->
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M12 8v8M9 11h6"/>
+                    </svg>
+                    <span class="logo-text">LawEd<span class="text-accent">AI</span></span>
+                </div>
+                <div class="logo-sub">Pre-Filing Advisory Portal</div>
+            </div>
+
+            <div class="new-case-btn-area">
+                <button type="button" class="btn btn-primary btn-block btn-new-case" id="btn-new-case-sidebar">
+                    <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Legal Analysis
+                </button>
+            </div>
+
+            <div class="sidebar-nav-label">Historical Analysed Cases</div>
+            <div class="sidebar-history-container scroll-styled">
+                <ul class="case-history-list" id="case-history-list">
+                    <!-- Dynamic case items populated by JS -->
+                    <li class="history-placeholder">No analysis records found.</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <button type="button" class="btn btn-dark btn-block btn-settings" id="btn-settings-toggle">
+                    <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    Configure LLM Keys (BYOK)
+                </button>
+                <div class="footer-credit">LawEdAI • Indian Penal Code Moderniser</div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Panel -->
+        <main class="app-workspace">
+            <!-- Header Bar -->
+            <header class="workspace-header">
+                <div class="header-branding">
+                    <h1 class="header-title" id="workspace-title">LawEdAI Dashboard</h1>
+                    <p class="header-subtitle">Statutes matching & simulated adversarial evaluation</p>
+                </div>
+                
+                <!-- Workspace Selector (Segmented Persona Control) -->
+                <div class="persona-selector-container">
+                    <span class="persona-label-prefix">Select Workspace:</span>
+                    <div class="persona-segmented-control" role="radiogroup" aria-label="Portal Mode">
+                        <label class="segmented-option active" id="label-persona-individual">
+                            <input type="radio" name="workspace-persona" value="individual" checked>
+                            <span class="option-content">
+                                <svg class="option-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Individual Portal
+                            </span>
+                        </label>
+                        <label class="segmented-option" id="label-persona-lawfirm">
+                            <input type="radio" name="workspace-persona" value="lawfirm">
+                            <span class="option-content">
+                                <svg class="option-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                                Law Firm Portal
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Screen 1: New Case Intake Form -->
+            <section class="workspace-view active" id="view-intake">
+                <div class="hero-banner">
+                    <div class="hero-glow"></div>
+                    <div class="hero-content">
+                        <div class="badge-premium">Pre-Filing Advisory Suite</div>
+                        <h2 class="hero-title font-outfit">Translate Citizen Grievances Into Powerful Statutory Cases</h2>
+                        <p class="hero-desc">Map any dispute under the new Indian legal acts—<strong>BNS</strong> (substantive penal code), 
+                        <strong>BNSS</strong> (filing procedure), and <strong>BSA</strong> (evidence admissibility)—and simulate case outcomes instantaneously.</p>
+                    </div>
+                </div>
+
+                <div class="layout-grid-intake">
+                    <!-- Left: Text Area Intake -->
+                    <div class="card glass-card card-intake-form">
+                        <div class="card-header">
+                            <div class="card-header-icon-title">
+                                <div class="header-icon-circle blue">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="card-title font-outfit">Step 1: Record Grievance Details</h3>
+                                    <p class="card-subtitle">Explain the incident, amounts involved, timelines, and suspect details</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="form-case-intake">
+                                <div class="form-group">
+                                    <label for="input-grievance" class="form-label">Grievance Narrative Description</label>
+                                    <textarea class="form-control text-area-large font-inter" id="input-grievance" placeholder="Explain what happened. For example: 
+'I purchased a premium software product from an online seller in Delhi. I transferred Rs. 45,000 via digital payment on 12th May 2026. However, immediately after payment, they deleted their social profile and blocked my phone number. The software was never delivered, and my refund claims are ignored. I have payment screenshots and transaction records.'" required></textarea>
+                                </div>
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label for="input-location" class="form-label">Jurisdictional Location (State/City)</label>
+                                        <input type="text" class="form-control" id="input-location" placeholder="e.g. Delhi, Maharashtra, Karnataka" value="Delhi">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-accent btn-block" id="btn-submit-case">
+                                            Initiate Mapping Sequence
+                                            <svg class="icon-right" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                <polyline points="12 5 19 12 12 19"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right: Evidence Upload Card -->
+                    <div class="card glass-card card-evidence-upload">
+                        <div class="card-header">
+                            <div class="card-header-icon-title">
+                                <div class="header-icon-circle gold">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="card-title font-outfit">Step 2: Append Case Evidence</h3>
+                                    <p class="card-subtitle">Upload transaction receipts, conversation screenshots, agreements</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="dropzone-area" id="dropzone">
+                                <input type="file" id="input-evidence-files" multiple accept="image/*,application/pdf" style="display: none;">
+                                <svg class="dropzone-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <p class="dropzone-title">Drag & Drop Files Here</p>
+                                <p class="dropzone-sub">Accepts Image screenshots & PDF documents (max 20MB)</p>
+                                <button type="button" class="btn btn-outline btn-sm btn-browse" id="btn-browse-files">Browse Files</button>
+                            </div>
+                            
+                            <!-- Evidence List -->
+                            <div class="evidence-list-container">
+                                <h4 class="section-micro-title">Attached Evidence Items (<span id="evidence-count">0</span>)</h4>
+                                <div class="evidence-cards-list scroll-styled" id="evidence-cards-list">
+                                    <p class="evidence-list-empty">No files attached to this case. Digital proof is highly recommended for BNS filings.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 2: Pulse Agent Arena Processing -->
+            <section class="workspace-view" id="view-processing">
+                <div class="processing-layout">
+                    <div class="arena-glow"></div>
+                    <div class="processing-card glass-card">
+                        <div class="processing-header">
+                            <div class="spinner-ring">
+                                <div class="ring-core"></div>
+                            </div>
+                            <h2 class="processing-title font-outfit">Triggering Multi-Agent Cooperative Engine</h2>
+                            <p class="processing-subtitle">Analyzing case parameters, matching statutes, and structuring legal brief</p>
+                        </div>
+                        
+                        <!-- List of Core Agents and Statuses -->
+                        <div class="agent-track-list">
+                            <!-- Intake Agent -->
+                            <div class="agent-row" id="row-agent-intake">
+                                <div class="agent-avatar blue">INT</div>
+                                <div class="agent-info">
+                                    <div class="agent-name font-outfit">Intake Fact Extractor Agent</div>
+                                    <div class="agent-status" id="status-agent-intake">Waiting in pool...</div>
+                                </div>
+                                <div class="agent-indicator-pulse"></div>
+                            </div>
+
+                            <!-- Evidence Agent -->
+                            <div class="agent-row" id="row-agent-evidence">
+                                <div class="agent-avatar teal">EVI</div>
+                                <div class="agent-info">
+                                    <div class="agent-name font-outfit">Evidence Verifier & OCR Agent</div>
+                                    <div class="agent-status" id="status-agent-evidence">Waiting in pool...</div>
+                                </div>
+                                <div class="agent-indicator-pulse"></div>
+                            </div>
+
+                            <!-- Statutory RAG Agent -->
+                            <div class="agent-row" id="row-agent-legal">
+                                <div class="agent-avatar purple">RAG</div>
+                                <div class="agent-info">
+                                    <div class="agent-name font-outfit">Statutory RAG Matcher Agent (BNS / BSA / BNSS)</div>
+                                    <div class="agent-status" id="status-agent-legal">Waiting in pool...</div>
+                                </div>
+                                <div class="agent-indicator-pulse"></div>
+                            </div>
+
+                            <!-- Legal Review Agent -->
+                            <div class="agent-row" id="row-agent-review">
+                                <div class="agent-avatar red">REV</div>
+                                <div class="agent-info">
+                                    <div class="agent-name font-outfit">Legal Integrity Review Agent (Safety Check)</div>
+                                    <div class="agent-status" id="status-agent-review">Waiting in pool...</div>
+                                </div>
+                                <div class="agent-indicator-pulse"></div>
+                            </div>
+
+                            <!-- Case Drafter Agent -->
+                            <div class="agent-row" id="row-agent-drafting">
+                                <div class="agent-avatar gold">DRT</div>
+                                <div class="agent-info">
+                                    <div class="agent-name font-outfit">Case Brief Drafter Agent</div>
+                                    <div class="agent-status" id="status-agent-drafting">Waiting in pool...</div>
+                                </div>
+                                <div class="agent-indicator-pulse"></div>
+                            </div>
+
+                            <!-- Courtroom Debate Agents (Law Firm Only) -->
+                            <div class="agent-courtroom-block" id="agent-courtroom-group" style="display: none;">
+                                <div class="agent-row" id="row-agent-plaintiff">
+                                    <div class="agent-avatar green">PRO</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name font-outfit">Prosecution opening Counsel Agent</div>
+                                        <div class="agent-status" id="status-agent-plaintiff">Waiting in pool...</div>
+                                    </div>
+                                    <div class="agent-indicator-pulse"></div>
+                                </div>
+
+                                <div class="agent-row" id="row-agent-defense">
+                                    <div class="agent-avatar magenta">DEF</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name font-outfit">Defense counsel Adversarial Objection Agent</div>
+                                        <div class="agent-status" id="status-agent-defense">Waiting in pool...</div>
+                                    </div>
+                                    <div class="agent-indicator-pulse"></div>
+                                </div>
+
+                                <div class="agent-row" id="row-agent-judge">
+                                    <div class="agent-avatar gold-royal">JDG</div>
+                                    <div class="agent-info">
+                                        <div class="agent-name font-outfit">Judicial Adjudicator Agent (Magistrate)</div>
+                                        <div class="agent-status" id="status-agent-judge">Waiting in pool...</div>
+                                    </div>
+                                    <div class="agent-indicator-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Agent Log -->
+                        <div class="agent-log-console">
+                            <div class="console-label">Console Logs</div>
+                            <div class="console-body scroll-styled" id="console-logs">
+                                <div class="console-line text-muted">&gt; System initialized. Ready to execute pipeline.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 3: Courtroom Battleground Arena (Law Firm Only) -->
+            <section class="workspace-view" id="view-courtroom">
+                <div class="court-arena-layout">
+                    <!-- Court Bench Banner -->
+                    <div class="court-bench">
+                        <div class="court-crest">
+                            <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="crest-svg">
+                                <path d="M12 2L2 22h20L12 2zm0 3.99L18.47 18H5.53L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+                            </svg>
+                        </div>
+                        <h2 class="bench-title font-outfit">Hon'ble Judicial Court of Magistrate</h2>
+                        <p class="bench-subtitle">Simulating Preliminary Pre-Filing Statutory Objections</p>
+                    </div>
+
+                    <div class="courtroom-debate-container">
+                        <!-- Left Pillar: Complainant Counsel (Prosecution/Plaintiff) -->
+                        <div class="counsel-pillar complainant-side">
+                            <div class="counsel-header">
+                                <div class="counsel-avatar plaintiff">PRO</div>
+                                <div>
+                                    <div class="counsel-name font-outfit">Prosecution Counsel</div>
+                                    <div class="counsel-role">Argues FOR Case Strength</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center Panel: The Argument Thread -->
+                        <div class="debate-thread-panel glass-card scroll-styled" id="court-debate-thread">
+                            <!-- Dialogue bubbles are dynamically inserted by JS -->
+                            <div class="debate-system-card">
+                                <div class="debate-system-icon">⚖️</div>
+                                <div>Magistrate calls the matter. Complainant Counsel, present your primary arguments under BNS substantive provisions.</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Pillar: Accused Counsel (Defense) -->
+                        <div class="counsel-pillar defense-side">
+                            <div class="counsel-header">
+                                <div class="counsel-avatar defense">DEF</div>
+                                <div>
+                                    <div class="counsel-name font-outfit">Defense Counsel</div>
+                                    <div class="counsel-role">Challenges Statutory Fit</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="courtroom-footer">
+                        <button type="button" class="btn btn-accent" id="btn-proceed-verdict">
+                            Proceed to Verdict &amp; Strategy Report
+                            <svg class="icon-right" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 4: Split Persona Outputs -->
+            <section class="workspace-view" id="view-output">
+                <!-- Dual Dashboard Wrapper -->
+                <div class="output-wrapper">
+                    
+                    <!-- 4A. INDIVIDUAL OUTPUT: Case Preparation Package -->
+                    <div class="individual-dashboard-layout" id="dashboard-individual" style="display: none;">
+                        <div class="dashboard-panel-header">
+                            <div>
+                                <div class="badge-premium green">Ready-Made Docket</div>
+                                <h2 class="panel-main-title font-outfit">Complainant Case Preparation Docket</h2>
+                                <p class="panel-main-subtitle">Submit this document directly to a local legal firm or police station to initiate the case.</p>
+                            </div>
+                            <button type="button" class="btn btn-outline btn-sm btn-print" onclick="window.print()">
+                                <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                Print / Export PDF
+                            </button>
+                        </div>
+
+                        <!-- Core Grid: Intake Facts & Timeline -->
+                        <div class="docket-grid">
+                            <!-- Left column: Facts extracted & timelines -->
+                            <div class="docket-main-column">
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">1. Case Narrative & Extracted Facts</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="parties-badge-box">
+                                            <div class="party-badge"><strong>Complainant:</strong> <span id="ind-party-complainant">Loading...</span></div>
+                                            <div class="party-badge danger"><strong>Accused Suspect:</strong> <span id="ind-party-accused">Loading...</span></div>
+                                        </div>
+                                        <ul class="docket-facts-list font-inter" id="ind-facts-list">
+                                            <!-- Dynamically populated facts -->
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">2. Chronological Fact Timeline</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="timeline-v-container" id="ind-timeline-list">
+                                            <!-- Dynamic timeline items -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">3. Formulated Complaint Brief (Draft)</h3>
+                                    </div>
+                                    <div class="card-body scroll-styled max-h-350">
+                                        <pre class="docket-brief-code font-inter" id="ind-brief-text">Loading case brief...</pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right column: Statutes mapped & evidence ratings -->
+                            <div class="docket-side-column">
+                                <div class="card glass-card card-highlight-border">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Statutory Classification Mappings</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="statutes-stack" id="ind-statute-stack">
+                                            <!-- Mapped BNS, BSA, BNSS codes -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Evidence Admissibility Audit</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="audit-stack" id="ind-evidence-audit">
+                                            <!-- Evidence cards showing High/Med/Low ratings -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card bg-amber-soft">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit text-warning">Completeness & Missing Evidence</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="safety-flags-stack" id="ind-safety-flags">
+                                            <!-- Safety flags regarding BSA Sec 63 digital proof -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4B. LAW FIRM OUTPUT: LLM Court Adjudication & Opponent strategy -->
+                    <div class="lawfirm-dashboard-layout" id="dashboard-lawfirm" style="display: none;">
+                        <div class="dashboard-panel-header">
+                            <div>
+                                <div class="badge-premium gold">Adversarial Evaluation Portal</div>
+                                <h2 class="panel-main-title font-outfit">Opponent Strategy &amp; Adversarial Strength Report</h2>
+                                <p class="panel-main-subtitle">Comprehensive litigation advisory derived from Magistrate simulation outcomes.</p>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm btn-print" onclick="window.print()">
+                                <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                Export Litigation Brief
+                            </button>
+                        </div>
+
+                        <!-- Core Law Firm Grid -->
+                        <div class="lawfirm-grid">
+                            
+                            <!-- Left: Metric Win Probability Radial Gauge & Opponent Strategy Brief -->
+                            <div class="lawfirm-main-column">
+                                <div class="grid-2-col">
+                                    <!-- Radial Gauge Card -->
+                                    <div class="card glass-card probability-card">
+                                        <div class="card-header border-slim">
+                                            <h3 class="card-title font-outfit">Case Strength Index</h3>
+                                        </div>
+                                        <div class="card-body flex-center flex-column">
+                                            <div class="radial-gauge-container">
+                                                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                                                    <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                                                    <circle class="gauge-fill" id="gauge-fill-circle" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                                                </svg>
+                                                <div class="gauge-center-label">
+                                                    <div class="gauge-number" id="gauge-probability-num">0%</div>
+                                                    <div class="gauge-text">Probability</div>
+                                                </div>
+                                            </div>
+                                            <div class="gauge-metric-description font-inter" id="firm-prob-desc">
+                                                Based on preliminary adjudication parameters under BNS and digital records verification constraints under BSA.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Statutes & Routes At-a-glance -->
+                                    <div class="card glass-card">
+                                        <div class="card-header border-slim">
+                                            <h3 class="card-title font-outfit">Filing Routes &amp; Authority</h3>
+                                        </div>
+                                        <div class="card-body scroll-styled max-h-250">
+                                            <div class="statutes-stack" id="firm-statute-stack">
+                                                <!-- Statutes list -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Opponent Strategy Alert Panel (Expandable premium panel) -->
+                                <div class="card glass-card opponent-alert-card border-glow-amber">
+                                    <div class="opponent-alert-banner">
+                                        <div class="banner-icon-bg">⚠️</div>
+                                        <div>
+                                            <h3 class="opponent-alert-title font-outfit">CRITICAL ADVOCACY BRIEFING</h3>
+                                            <p class="opponent-alert-desc">Primary objections &amp; counter-strategies that opposing counsels will execute in court.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="opponent-brief-content scroll-styled max-h-350" id="firm-strategy-brief">
+                                            <!-- Opponent strategies details -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Formal Court Judgment Draft -->
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Judicial Evaluation &amp; Verdict Order</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="judgment-text-box font-inter scroll-styled max-h-350" id="firm-verdict-text">
+                                            <!-- Court verdict text -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Timeline, Evidence Ratings & Safety checklist -->
+                            <div class="lawfirm-side-column">
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Case Dossier Facts &amp; timeline</h3>
+                                    </div>
+                                    <div class="card-body scroll-styled max-h-400">
+                                        <div class="parties-badge-box">
+                                            <div class="party-badge"><strong>Pros:</strong> <span id="firm-party-complainant">Loading...</span></div>
+                                            <div class="party-badge danger"><strong>Def:</strong> <span id="firm-party-accused">Loading...</span></div>
+                                        </div>
+                                        <div class="timeline-v-container" id="firm-timeline-list">
+                                            <!-- Timeline -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Evidence Admissibility Ratings</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="audit-stack" id="firm-evidence-audit">
+                                            <!-- Mapped evidence cards -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">System Action Items (Cure Checklist)</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="safety-flags-stack" id="firm-safety-flags">
+                                            <!-- Safety flags checklists -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card glass-card">
+                                    <div class="card-header border-slim">
+                                        <h3 class="card-title font-outfit">Full Prosecuting Brief Draft</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="brief-draft-box font-inter scroll-styled max-h-250">
+                                            <pre class="docket-brief-code" id="firm-brief-text">Loading pre-filing brief...</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Configure LLM Keys (BYOK) Modal Dialog -->
+    <div class="modal-backdrop" id="modal-settings">
+        <div class="modal-dialog glass-card">
+            <div class="modal-header">
+                <h3 class="modal-title font-outfit">Configure LLM Gateway (BYOK)</h3>
+                <button type="button" class="btn-close" id="btn-settings-close">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">By default, the platform runs in high-fidelity **Simulation Mode** powered by seeded Indian legal acts databases.
+                To activate live cognitive agents, provide your own API key below. Keys are stored safely **only in your browser local storage**.</p>
+                
+                <form id="form-byok-settings">
+                    <div class="form-group">
+                        <label for="byok-provider" class="form-label">LLM Provider</label>
+                        <select class="form-control select-dark" id="byok-provider">
+                            <option value="simulation" selected>High-Fidelity Offline Simulator (Recommended)</option>
+                            <option value="groq">Groq Cloud Console (Llama 3.1 70B)</option>
+                            <option value="openai">OpenAI Console (GPT-4o Mini)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="group-api-key" style="display: none;">
+                        <label for="byok-key" class="form-label">API Access Key</label>
+                        <input type="password" class="form-control" id="byok-key" placeholder="Paste your API key here (sk-... or gsk-...)">
+                        <small class="form-hint-text">Your API key is never saved on device servers; it is passed securely in requests headers directly to the API endpoint.</small>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="btn-settings-cancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI State Control scripts -->
+    <script src="/assets/js/app.js"></script>
+</body>
+</html>
