@@ -164,3 +164,32 @@ def test_full_lawfirm_courtroom_orchestration(db_session):
     strategy = db_session.query(CaseDraft).filter(CaseDraft.case_id == case.id, CaseDraft.draft_type == "strategy_report").first()
     assert strategy is not None
     assert "ADVERSARIAL STRENGTH" in strategy.content
+
+def test_individual_win_probability_orchestration(db_session):
+    # 1. Create an individual citizen case
+    case = CaseSubmission(
+        grievance="I transferred Rs. 45,000 to an online dealer named Suresh in Delhi, but they blocked me on WhatsApp immediately.",
+        location="Delhi",
+        user_persona="individual"
+    )
+    db_session.add(case)
+    db_session.commit()
+    db_session.refresh(case)
+
+    # 2. Trigger Full Orchestration sequence
+    orch_result = orchestrate_case_analysis(db_session, case.id)
+    assert orch_result["status"] == "success"
+    assert orch_result["persona"] == "individual"
+
+    # 3. Verify Judge output (Probability and Verdict saved)
+    db_session.refresh(case)
+    assert case.win_probability is not None
+    assert case.win_probability > 0
+    assert case.judge_verdict is not None
+
+    # Verify that facts and custom entities were dynamically extracted
+    facts_entry = db_session.query(FactExtraction).filter(FactExtraction.case_id == case.id).first()
+    assert facts_entry is not None
+    assert "Suresh" in facts_entry.parties_json
+    assert "Rs. 45,000" in facts_entry.harm
+

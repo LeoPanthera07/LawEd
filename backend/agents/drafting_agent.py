@@ -7,7 +7,7 @@ import httpx
 def run_drafting_agent(db: Session, case_id: int, api_key: str = None, provider: str = "groq") -> dict:
     """
     Drafting Agent: Compiles extracted facts, evidence ratings, and statutory legal references 
-    into a beautifully formatted legal Case Brief or Case Preparation Package.
+    into a formal, high-fidelity Pre-Filing Court Complaint Petition.
     """
     case = db.query(CaseSubmission).filter(CaseSubmission.id == case_id).first()
     if not case:
@@ -31,10 +31,11 @@ def run_drafting_agent(db: Session, case_id: int, api_key: str = None, provider:
     # Assemble dynamic structured text
     if api_key:
         try:
-            draft_content = call_llm_for_draft(case.grievance, facts_list, legal_refs, evidence, api_key, provider)
+            draft_content = call_llm_for_draft(case.grievance, facts_list, legal_refs, evidence, api_key, provider, location)
             save_draft(db, case_id, draft_content)
             return {"status": "success", "agent": "Drafting Agent", "message": "Draft created successfully via LLM."}
         except Exception:
+            # Fallback to simulation on failure
             pass
 
     # High-Fidelity simulated legal draft compilation
@@ -51,25 +52,28 @@ def save_draft(db: Session, case_id: int, content: str):
     draft.content = content
     db.commit()
 
-def call_llm_for_draft(grievance: str, facts: list, legal_refs: list, evidence: list, api_key: str, provider: str) -> str:
+def call_llm_for_draft(grievance: str, facts: list, legal_refs: list, evidence: list, api_key: str, provider: str, location: str) -> str:
     system_prompt = (
-        "You are an expert legal draftsman in India. Draft a professional, highly structured Pre-Filing Case Brief / Complaint Draft based on the provided facts, evidence items, and statutory laws.\n"
-        "The draft should look extremely premium and use standard legal headers:\n"
-        "1. TITLE & PARTIES (Complainant vs Accused)\n"
-        "2. STATEMENT OF JURISDICTION & LOCATION\n"
-        "3. EXTRACTED FACTS OF THE DISPUTE (numbered, precise)\n"
-        "4. TIMELINE OF INCIDENTS\n"
-        "5. APPLICABLE STATUTORY SECTIONS (clearly citing the new BNS, BNSS, and BSA rules mapped)\n"
-        "6. EVIDENCE SUBSTANTIATION LOG\n"
-        "7. CLOSING CLAIMS & REQUESTED RESOLUTION\n"
-        "Maintain formal legal phrasing, professional spacing, and clear structure. Do NOT add preamble or meta-commentary."
+        "You are an expert legal draftsman in India. Draft an authentic, professional, and highly formal Pre-Filing Court Complaint Petition / Complaint under Section 173/223 BNSS.\n"
+        "The petition MUST follow the standard Indian legal layout:\n"
+        "1. COURT HEADING (e.g. 'BEFORE THE STATION HOUSE OFFICER / MAGISTRATE COURT AT [LOCATION]')\n"
+        "2. PARTIES SECTION (COMPLAINANT vs ACCUSED SUSPECTS)\n"
+        "3. CITATION SECTION (COMPLAINT UNDER SECTION [BNS sections] OF BNS, 2023 READ WITH SECTION [BNSS sections] OF BNSS, 2023)\n"
+        "4. 'MOST RESPECTFULLY SHOWETH:' preamble\n"
+        "5. Numbered legal statements/facts starting with 'That...'\n"
+        "6. Chronological incident timeline block\n"
+        "7. Detailed BNS/BNSS/BSA statutory provisions and applicability\n"
+        "8. Exhibit Logs (listing screenshots, receipts, or other evidence)\n"
+        "9. 'PRAYER' section with clear, formal, lettered legal demands (e.g. registering FIR, summoning suspect)\n"
+        "Maintain strict legal phrasing, formal spacing, and professional petitioner signature blocks. Do NOT include any meta-commentary, markdown, backticks, or intro text."
     )
     
     legal_text = "\n".join([f"- Section {r.section_number} {r.code_type} ({r.section_title}): {r.description}" for r in legal_refs])
     evidence_text = "\n".join([f"- {e.filename} ({e.file_type}): Rating {e.support_rating}" for e in evidence])
     
     user_prompt = (
-        f"Complainant Narrative:\n{grievance}\n\n"
+        f"Location of Action: {location}\n\n"
+        f"Complainant Grievance:\n{grievance}\n\n"
         f"Extracted Facts:\n{json.dumps(facts)}\n\n"
         f"Applicable Statutory Sections:\n{legal_text}\n\n"
         f"Evidence Log:\n{evidence_text}"
@@ -104,73 +108,83 @@ def call_llm_for_draft(grievance: str, facts: list, legal_refs: list, evidence: 
     return res["choices"][0]["message"]["content"]
 
 def generate_simulated_draft(parties: dict, location: str, harm: str, facts: list, timeline: list, bns_sections: list, bnss_sections: list, bsa_sections: list, evidence: list) -> str:
-    """Simulates a highly detailed legal draft package."""
+    """Generates a highly structured, authentic Indian pre-filing petition complaint."""
     complainant = parties.get("complainant", "User (Informant)")
     accused = parties.get("accused", "Unnamed Opponent")
     
-    # Render sections
-    bns_text = "\n".join([f"   * **Section {s.section_number} BNS** ({s.section_title}): Punishable with {s.punishment}. \n     *Definition*: {s.description}" for s in bns_sections])
-    bnss_text = "\n".join([f"   * **Section {s.section_number} BNSS** ({s.section_title}): \n     *Procedural Step*: {s.procedural_route}" for s in bnss_sections])
-    bsa_text = "\n".join([f"   * **Section {s.section_number} BSA** ({s.section_title}): \n     *Admissibility Mandate*: {s.procedural_route}" for s in bsa_sections])
+    bns_sec_nums = "/".join([s.section_number for s in bns_sections])
+    bnss_sec_nums = "/".join([s.section_number for s in bnss_sections])
+    
+    # Format mapped codes citations
+    bns_citations = ", ".join([f"Section {s.section_number} BNS (governing {s.section_title})" for s in bns_sections])
+    bnss_citations = ", ".join([f"Section {s.section_number} BNSS (prescribing {s.section_title})" for s in bnss_sections])
+    bsa_citations = ", ".join([f"Section {s.section_number} BSA (regulating {s.section_title})" for s in bsa_sections])
 
-    facts_text = "\n".join([f"   {i+1}. {f}" for i, f in enumerate(facts)])
+    facts_text = "\n".join([f"   {i+1}. That {f}" for i, f in enumerate(facts)])
+    
     timeline_text = "\n".join([f"   * **{t['date']}**: {t['event']}" for t in timeline])
     
     evidence_text = ""
     if evidence:
-        evidence_text = "\n".join([f"   * **File**: {e.filename} ({e.file_type})\n     * credibility support rating: **{e.support_rating}**\n     * content: Assessed to corroborate statements of transaction fraud and timeline logs." for e in evidence])
+        evidence_text = "\n".join([f"   * **Exhibit {i+1}**: {e.filename} ({e.file_type}) — support rating: **{e.support_rating}**" for i, e in enumerate(evidence)])
     else:
-        evidence_text = "   * **No physical evidence files attached.** (Alert: Complainant must procure ledger, screenshots, or physical records before formal court submission)."
+        evidence_text = "   * **No physical attachments present at pre-filing.**"
 
-    brief_template = f"""================================================================================
-PRE-FILING CASE PREPARATION PACKAGE & BRIEF
-================================================================================
+    petition_draft = f"""BEFORE THE STATION HOUSE OFFICER / MAGISTRATE COURT AT {location.upper()}
 
-1. PARTIES TO THE COMPLAINT
---------------------------------------------------------------------------------
-   COMPLAINANT:   {complainant}
-   ACCUSED:       {accused}
+IN THE MATTER OF:
+{complainant.upper()}                                      ... COMPLAINANT / INFORMANT
 
-2. JURISDICTION & PLACE of ACTION
---------------------------------------------------------------------------------
-   TERRITORIAL JURISDICTION: District Court of {location}
-   STATUTORY JURISDICTION: Executed in accordance with procedural guidelines under Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023.
+VERSUS
 
-3. STATEMENT OF FACTS (SUBSTANTIVE DISPUTE DETAILS)
---------------------------------------------------------------------------------
+{accused.upper()}                                          ... ACCUSED SUSPECT(S)
+
+
+COMPLAINT UNDER SECTION {bns_sec_nums} OF BHARATIYA NYAYA SANHITA (BNS), 2023 READ WITH SECTION {bnss_sec_nums} OF BHARATIYA NAGARIK SURAKSHA SANHITA (BNSS), 2023 FOR INITIATING POLICE INVESTIGATION / SUMMONS.
+
+
+MOST RESPECTFULLY SHOWETH:
+
+I. JURISDICTION & CAPACITY:
+   1. That the Complainant is a resident of {location} and is filing this complaint to seek legal redressal for injuries caused by the fraudulent and criminal acts of the Accused.
+   2. That this Hon'ble Authority / Court holds territorial and subject-matter jurisdiction to register this cognizable offense.
+
+II. STATEMENT OF DOCKET FACTS:
 {facts_text}
 
-4. TIMELINE OF INCIDENTS
---------------------------------------------------------------------------------
+III. CHRONOLOGICAL TIMELINE OF INCIDENTS:
 {timeline_text}
 
-5. APPLICABLE STATUTORY PROVISIONS
---------------------------------------------------------------------------------
-A. SUBSTANTIVE OFFENSES MAPPED (BHARATIYA NYAYA SANHITA - BNS):
-{bns_text}
+IV. APPLICABLE STATUTORY CITATIONS:
+   A. SUBSTANTIVE CHARGES (BNS, 2023):
+      The actions of the Accused satisfy the ingredients of:
+      * {bns_citations}.
 
-B. PROCEDURAL FILING PATHWAYS (BHARATIYA NAGARIK SURAKSHA SANHITA - BNSS):
-{bnss_text}
+   B. PROCEDURAL CHANNELS (BNSS, 2023):
+      In accordance with procedural routing, this matter is triable under:
+      * {bnss_citations}.
 
-C. EVIDENCE ADMISSIBILITY REQUIREMENTS (BHARATIYA SAKSHYA ADHINIYAM - BSA):
-{bsa_text}
+   C. ADMISSIBILITY PROTOCOLS (BSA, 2023):
+      Any digital proof attached to this docket will satisfy requirements of:
+      * {bsa_citations}.
 
-6. EVIDENCE CORROBORATION & VALIDATION LOG
---------------------------------------------------------------------------------
+V. LIST OF EXHIBITS & CORROBORATING PROOF:
 {evidence_text}
 
-7. CLOSING CLAIMS & REQUESTED DIRECTIVES
---------------------------------------------------------------------------------
-   In light of the facts compiled and statutory guidelines mapped, the Complainant respectfully submits that a clear prima facie case is established against the Accused.
-   
-   Directives Requested:
-   1. Registration of an FIR / complaint under the relevant substantive sections.
-   2. Preservation of all transaction and digital communication records under Section 63 BSA.
-   3. Formal summons/warrants to the Accused for recovery of damages and wrongful losses.
+VI. BRIEF PRAYER FOR DIRECTIVES:
+    In light of the facts detailed above and statutory acts mapped, the Complainant most respectfully prays that this Hon'ble Authority / Court may be pleased to:
+    
+    a) Register a First Information Report (FIR/e-FIR) under Section 173 BNSS or take cognisance of this complaint under Section 223 BNSS against the Accused.
+    b) Direct the preservation and forensic analysis of all transaction ledgers and electronic communication threads in accordance with Section 63 BSA.
+    c) Issue formal summons or warrants against the Accused to secure appearance and recovery of wrongful losses/remedies.
+    d) Pass any other directive or order that this Hon'ble Authority may deem fit in the interest of justice.
 
-Dated: {datetime.now().strftime("%d-%B-%Y")}
-Signed: __________________________
-(Complainant / Representative)
-================================================================================
+
+DATED: {datetime.now().strftime("%d-%B-%Y")}
+PLACE: {location}
+
+COMPLAINANT / INFORMANT
+
+Through: Counsel/Authorized Legal Representative
 """
-    return brief_template
+    return petition_draft

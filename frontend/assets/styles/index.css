@@ -1719,59 +1719,156 @@ body.theme-lawfirm .segmented-option.active .option-content {
    Print Layout Override
    --------------------------------------------------------- */
 @media print {
-    body {
-        background: #ffffff !important;
+    /* 1. Global Reset */
+    * {
+        background: transparent !important;
         color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        filter: none !important;
+        -webkit-filter: none !important;
     }
     
+    body, html {
+        background: #ffffff !important;
+        color: #111111 !important;
+        font-family: "Inter", -apple-system, sans-serif !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    /* 2. Hide Non-Print Scaffolding */
     .app-sidebar,
     .workspace-header,
+    .persona-segmented-control,
+    .new-case-btn-area,
+    .sidebar-footer,
     .btn,
+    .btn-print,
+    .btn-outline,
+    .btn-primary,
     .dropzone-area,
+    .evidence-list-container,
+    .console-log-console,
     .modal-backdrop,
     .processing-layout,
     .counsel-pillar,
-    .courtroom-footer {
+    .courtroom-footer,
+    .counsel-header,
+    .courtroom-debate-container {
         display: none !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
     }
     
+    /* 3. Re-structure App Grid Layout */
     .app-layout {
+        display: block !important;
         grid-template-columns: 1fr !important;
+        background: #ffffff !important;
     }
     
     .app-workspace {
         padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
         overflow: visible !important;
         height: auto !important;
+        width: 100% !important;
     }
     
     .workspace-view {
         display: block !important;
         padding: 0 !important;
         overflow: visible !important;
+        height: auto !important;
     }
     
+    /* 4. Reset Cards and Spacing */
     .glass-card {
         background: #ffffff !important;
-        border: 1px solid #cccccc !important;
-        color: #000000 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        color: #111111 !important;
         box-shadow: none !important;
         backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        margin-bottom: 24px !important;
+        padding: 20px !important;
+        page-break-inside: avoid !important;
     }
     
     .docket-grid, .lawfirm-grid {
-        grid-template-columns: 1fr !important;
-        gap: 20px !important;
+        display: block !important;
+        width: 100% !important;
     }
     
-    .docket-brief-code, .opponent-brief-content {
-        background: #f3f4f6 !important;
-        color: #000000 !important;
-        border: 1px solid #cccccc !important;
+    .docket-main-column, .docket-side-column,
+    .lawfirm-main-column, .lawfirm-side-column {
+        display: block !important;
+        width: 100% !important;
+        gap: 0 !important;
     }
     
+    /* 5. Force Expand All Scrollable Blocks (Crucial!) */
+    .scroll-styled,
+    .max-h-350,
+    .max-h-400,
+    .max-h-250,
+    .evidence-cards-list,
+    .audit-stack,
+    .safety-flags-stack,
+    .docket-brief-code,
+    .brief-draft-box pre,
+    .opponent-brief-content,
+    .judgment-text-box,
+    .brief-draft-box {
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        overflow-y: visible !important;
+    }
+    
+    /* 6. Formatting Code & Legal Brief Pre Blocks */
+    .docket-brief-code,
+    .opponent-brief-content,
+    .judgment-text-box,
+    .brief-draft-box pre {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        font-family: "Courier New", Courier, monospace !important;
+        font-size: 10pt !important;
+        padding: 15px !important;
+        white-space: pre-wrap !important;
+        word-break: break-all !important;
+        page-break-inside: auto !important;
+    }
+    
+    /* 7. Timeline Print Styling */
     .timeline-v-container::before {
-        background: #cccccc !important;
+        background: #cbd5e1 !important;
+    }
+    .timeline-v-node {
+        background: #ffffff !important;
+        border: 2px solid #64748b !important;
+        box-shadow: none !important;
+    }
+    .timeline-v-date {
+        color: #475569 !important;
+    }
+    
+    /* 8. Badge Enhancements */
+    .win-badge, .persona-tag, .evidence-rating-pill, .party-badge {
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        text-shadow: none !important;
     }
 }
 

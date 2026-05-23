@@ -59,6 +59,84 @@
         "Unauthorized entry or remaining unlawfully by the accused (photographs, eye-witnesses).",
         "Intent to commit an offense, intimidate, insult, or annoy."
       ]
+    },
+    {
+      "section_number": "115",
+      "section_title": "Voluntarily Causing Hurt",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever does any act with the intention of thereby causing hurt to any person, or with the knowledge that he is likely thereby to cause hurt to any person, and does thereby cause hurt to any person, is said voluntarily to cause hurt.",
+      "punishment": "Imprisonment of either description for a term which may extend to one year, or with fine which may extend to ten thousand rupees, or with both.",
+      "evidence_required": [
+        "Medical examination report confirming bodily pain, disease, or infirmity.",
+        "Proof of intentional action or knowledge of potential harm (eyewitness testimony, physical proof)."
+      ]
+    },
+    {
+      "section_number": "117",
+      "section_title": "Voluntarily Causing Grievous Hurt",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Voluntarily causing hurt which results in permanent privation of sight, hearing, member, joint, destruction of powers, permanent disfiguration of head/face, bone fracture, or bodily pain for a period of fifteen days.",
+      "punishment": "Imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine.",
+      "evidence_required": [
+        "Detailed medical officer certificate or X-ray proving fracture or severe injury.",
+        "Proof of weapon used or gravity of assault."
+      ]
+    },
+    {
+      "section_number": "336",
+      "section_title": "Forgery",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever makes any false document or false electronic record or part of a document or electronic record, with intent to cause damage or injury to the public or to any person, or to support any claim or title, or to cause any person to part with property.",
+      "punishment": "Imprisonment of either description for a term which may extend to two years, or with fine, or with both.",
+      "evidence_required": [
+        "Forged physical document or altered digital file.",
+        "Forensic report or proof of signature fabrication.",
+        "Intent to defraud or cause injury."
+      ]
+    },
+    {
+      "section_number": "61",
+      "section_title": "Criminal Conspiracy",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "When two or more persons agree to do, or cause to be done: (a) an illegal act, or (b) an act which is not illegal by illegal means, such an agreement is designated a criminal conspiracy.",
+      "punishment": "If the conspiracy is to commit a serious offense, same punishment as abetment of such offense; otherwise imprisonment up to six months, or fine, or both.",
+      "evidence_required": [
+        "Proof of agreement between two or more parties (call logs, shared messages, joint bank transactions).",
+        "An overt act committed by one or more parties in pursuance of the conspiracy agreement."
+      ]
+    },
+    {
+      "section_number": "351",
+      "section_title": "Criminal Intimidation",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever threatens another with any injury to his person, reputation or property, or to the person or reputation of any one in whom that person is interested, with intent to cause alarm to that person, or to cause that person to do any act which he is not legally bound to do.",
+      "punishment": "Imprisonment of either description for a term which may extend to two years, or with fine, or with both.",
+      "evidence_required": [
+        "Proof of threatening communication (audio files, SMS text, WhatsApp screenshots, call recordings).",
+        "Proof that the threat was intended to cause alarm or force actions."
+      ]
+    },
+    {
+      "section_number": "319",
+      "section_title": "Cheating by Personation",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "A person is said to cheat by personation if he cheats by pretending to be some other person, or by knowingly substituting one person for another, or representing that he or any other person is a person other than he or such other person really is.",
+      "punishment": "Imprisonment of either description for a term which may extend to five years, or with fine, or with both.",
+      "evidence_required": [
+        "Evidence of false identity assumed by the accused (fake profiles, forged identity cards).",
+        "Deceptive communication inducing complainant."
+      ]
+    },
+    {
+      "section_number": "270",
+      "section_title": "Public Nuisance",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "A person is guilty of a public nuisance who does any act or is guilty of an illegal omission which causes any common injury, danger, annoyance or obstruction to the public or to the people in general who dwell or occupy property in the vicinity.",
+      "punishment": "Fine which may extend to five thousand rupees.",
+      "evidence_required": [
+        "Proof of act causing obstruction or annoyance (photographs, neighborhood statements).",
+        "Impact on public space or local residents."
+      ]
     }
   ],
   "BNSS": [
@@ -103,8 +181,8 @@
       "section_number": "104",
       "section_title": "Burden of Proof",
       "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
-      "description": "Whoever desires any Court to give judgment as to any legal right or liability dependent on the existence of facts which he asserts, must prove that those facts exist.",
-      "evidence_rule": "The burden of proving a specific fact lies on the party who makes the claim. If a user claims cheating, they must prove the deceptive inducement occurred; the defendant does not have to prove their innocence until a prima facie case is made."
+      "description": "The burden of proof as to any particular fact lies on that person who wishes the Court to believe in its existence, unless it is provided by any law that the proof of that fact shall lie on any particular person.",
+      "evidence_rule": "The complainant holds the initial burden to establish their claim with admissible proof."
     }
   ]
 }

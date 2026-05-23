@@ -1,4 +1,5 @@
 import json
+import re
 from sqlalchemy.orm import Session
 from backend.models import CaseSubmission, FactExtraction
 import httpx
@@ -89,100 +90,160 @@ def call_llm_for_intake(text: str, api_key: str, provider: str) -> dict:
     return json.loads(content)
 
 def simulate_intake_extraction(text: str, user_location: str) -> dict:
-    """Helper to simulate fact extraction based on keyword scans of user input."""
-    # Analyze text for parties and harm
+    """Helper to dynamically parse raw grievance text and formulate custom timelines, facts, and suspects."""
     lower_text = text.lower()
     
-    # Detect general category
+    # 1. Detect Category
     category = "general"
-    if any(k in lower_text for k in ["cheat", "scam", "fraud", "fake", "online", "money"]):
+    if any(k in lower_text for k in ["cheat", "scam", "fraud", "fake", "online", "money", "cheated", "lured", "payment"]):
         category = "cheating"
-    elif any(k in lower_text for k in ["steal", "theft", "stolen", "cctv"]):
+    elif any(k in lower_text for k in ["steal", "theft", "stolen", "stole", "cctv", "robbed"]):
         category = "theft"
-    elif any(k in lower_text for k in ["trust", "partner", "misappropriated", "invested"]):
+    elif any(k in lower_text for k in ["trust", "partner", "misappropriated", "invested", "fiduciary"]):
         category = "trust_breach"
-    elif any(k in lower_text for k in ["defame", "reputation", "post", "social"]):
+    elif any(k in lower_text for k in ["defame", "reputation", "post", "social", "libel", "slander"]):
         category = "defamation"
-    elif any(k in lower_text for k in ["trespass", "land", "broke in", "property"]):
+    elif any(k in lower_text for k in ["trespass", "land", "broke in", "property", "entered", "encroach"]):
         category = "trespass"
+    elif any(k in lower_text for k in ["hurt", "pain", "beaten", "slapped", "punched", "injury", "assault"]):
+        category = "hurt"
+    elif any(k in lower_text for k in ["forged", "forgery", "fake document", "signature", "alter"]):
+        category = "forgery"
+    elif any(k in lower_text for k in ["threat", "threatened", "alarm", "intimidated"]):
+        category = "threat"
 
-    # Simulated parties
-    complainant = "User (Informant)"
-    accused = "Unnamed Opponent"
-    if "dealer" in lower_text:
-        accused = "Product Dealer / Seller"
-    elif "shop" in lower_text:
-        accused = "Shop Owner"
-    elif "partner" in lower_text:
+    # 2. Extract Amount (if any)
+    amount = "unspecified amount"
+    amount_match = re.search(r'(?:rs\.?|rs|rupees|inr)\s*(\d+(?:,\d+)*)', lower_text)
+    if not amount_match:
+        amount_match = re.search(r'(\d+(?:,\d+)*)\s*(?:rupees|inr|rs)', lower_text)
+    if amount_match:
+        amount = "Rs. " + amount_match.group(1)
+
+    # 3. Extract Suspect (Accused)
+    accused = "Unnamed Accused"
+    if "partner" in lower_text:
         accused = "Business Partner"
     elif "landlord" in lower_text:
         accused = "Landlord"
     elif "tenant" in lower_text:
         accused = "Tenant"
+    elif "seller" in lower_text or "dealer" in lower_text or "merchant" in lower_text:
+        accused = "Online Seller / Dealer"
+    elif "shop" in lower_text:
+        accused = "Shop Owner / Suspect"
+    elif "neighbor" in lower_text:
+        accused = "Neighboring Resident"
+    elif "friend" in lower_text:
+        accused = "Known Friend / Acquaintance"
+    elif "police" in lower_text:
+        accused = "Accused Officer"
+        
+    # Search for specific names if introduced (e.g. "by a person named X" or "named X")
+    name_match = re.search(r'(?:named|name of|person named)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)', text)
+    if name_match:
+        accused = f"{name_match.group(1)} ({accused if accused != 'Unnamed Accused' else 'Suspect'})"
 
-    # Simulated timeline extraction
+    # 4. Parse Dates & Build Chronological Timeline
     timeline = []
-    if "yesterday" in lower_text:
-        timeline.append({"date": "Yesterday", "event": "Incident of offense took place."})
-    elif "last week" in lower_text:
-        timeline.append({"date": "Last Week", "event": "Complainant discovered the offense."})
-    else:
-        timeline.append({"date": "Recent (Date Unspecified)", "event": "Incident occurred."})
-
-    timeline.append({"date": "Subsequent", "event": "Complainant attempted contact, but was refused resolution."})
-
-    # Simulated facts list
+    # Find formal dates like "12th May 2026" or "12-05-2026"
+    date_matches = re.findall(r'(\d{1,2}(?:st|nd|rd|th)?\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(?:\d{4})?)', lower_text)
+    
+    # Sentence-based temporal scanning
+    sentences = [s.strip() for s in re.split(r'[\.\?\!]', text) if len(s.strip()) > 10]
+    
+    for s in sentences:
+        s_lower = s.lower()
+        s_date = None
+        for dm in date_matches:
+            if dm in s_lower:
+                s_date = dm.upper()
+                break
+        if not s_date:
+            if "yesterday" in s_lower:
+                s_date = "Yesterday"
+            elif "last week" in s_lower:
+                s_date = "Last Week"
+            elif "today" in s_lower:
+                s_date = "Today"
+            elif "ago" in s_lower:
+                ago_match = re.search(r'(\d+\s+(?:days|weeks|months)\s+ago)', s_lower)
+                if ago_match:
+                    s_date = ago_match.group(1).upper()
+        
+        if s_date:
+            # Formulate chronological event
+            event = s.strip()
+            # Clean first letters if they are transition words
+            event = re.sub(r'^(?:however|moreover|then|after that|subsequently|firstly|secondly|consequently)\,?\s*', '', event, flags=re.IGNORECASE)
+            event = event[0].upper() + event[1:] if event else ""
+            timeline.append({"date": s_date, "event": event})
+            
+    # If no timelines were extracted, build a sensible relative one based on sentences
+    if not timeline:
+        if len(sentences) >= 1:
+            timeline.append({"date": "INITIAL DISPUTE", "event": sentences[0] + "."})
+        if len(sentences) >= 2:
+            timeline.append({"date": "CRITICAL INCIDENT", "event": sentences[1] + "."})
+        if len(sentences) >= 3:
+            timeline.append({"date": "SUBSEQUENT RESOLUTION", "event": sentences[-1] + "."})
+        else:
+            timeline.append({"date": "RECENT (DATE UNKNOWN)", "event": "Incident of offense took place."})
+            timeline.append({"date": "SUBSEQUENT", "event": "Complainant attempted contact, but was refused resolution."})
+    
+    # 5. Extract Dynamic Facts list from sentences
     facts = []
-    if category == "cheating":
-        facts = [
-            "Complainant entered into an agreement/purchase with the accused.",
-            "Accused made assurances regarding the quality/return of goods or services.",
-            "Complainant transferred consideration/money based on these representations.",
-            "The representations were found to be false and dishonest from the inception.",
-            "Accused has blocked communication or refused refunds, causing wrongful loss."
-        ]
-    elif category == "theft":
-        facts = [
-            "Complainant was in lawful possession of certain movable property.",
-            "The property was moved and taken out of possession without complainant's consent.",
-            "The taking was done dishonestly with intention to cause wrongful gain to accused."
-        ]
-    elif category == "trust_breach":
-        facts = [
-            "Complainant entrusted certain property/funds to the accused.",
-            "Accused held a fiduciary duty to manage or preserve the entrusted assets.",
-            "Accused dishonestly misappropriated the property for personal gain in violation of trust."
-        ]
-    elif category == "defamation":
-        facts = [
-            "Accused published or communicated imputations concerning the complainant.",
-            "The imputations were made publicly (verbal, text, or social media).",
-            "The statements are demonstrably false and intended to cause damage to complainant's reputation."
-        ]
-    elif category == "trespass":
-        facts = [
-            "Complainant is in lawful possession of the property.",
-            "Accused entered upon or remained unlawfully in the said property without consent.",
-            "The entry was done with intent to intimidate, annoy, or commit an offense."
-        ]
-    else:
-        facts = [
-            "Complainant reports a significant grievance concerning wrongful actions of the accused.",
-            "Attempts to resolve the dispute amicably have failed.",
-            "Complainant seeks legal recourse and procedural mapping under Indian law."
-        ]
+    for i, s in enumerate(sentences[:5]):
+        # Convert first person "I" / "my" / "me" to "Complainant" / "Complainant's"
+        fact_str = s
+        fact_str = re.sub(r'\bI\b', 'Complainant', fact_str)
+        fact_str = re.sub(r'\bmy\b', "Complainant's", fact_str)
+        fact_str = re.sub(r'\bme\b', 'Complainant', fact_str)
+        fact_str = re.sub(r'\bwe\b', 'Complainants', fact_str)
+        fact_str = re.sub(r'\bour\b', "Complainants'", fact_str)
+        fact_str = re.sub(r'\bus\b', 'Complainants', fact_str)
+        
+        # Clean transitions
+        fact_str = re.sub(r'^(?:however|moreover|then|after that|subsequently|firstly|secondly|consequently)\,?\s*', '', fact_str, flags=re.IGNORECASE)
+        fact_str = fact_str.strip()
+        fact_str = fact_str[0].upper() + fact_str[1:] if fact_str else ""
+        if fact_str:
+            facts.append(fact_str)
 
-    # Harm description
-    harm = "Financial loss and severe mental harassment due to wrongful actions of the accused."
-    if "rs." in lower_text or "rupees" in lower_text or "refund" in lower_text:
-        harm = "Significant financial loss accompanied by deprivation of proprietary rights and mental distress."
+    # Inject specific legal requirement facts to guarantee RAG robustness
+    if category == "cheating":
+        facts.append(f"The Accused made representations regarding goods/services to induce a transfer of {amount}.")
+        facts.append("The said representations were discovered to be false and deceptive from the inception.")
+    elif category == "theft":
+        facts.append("The Accused dishonestly moved the complainant's movable property out of their possession without consent.")
+    elif category == "trust_breach":
+        facts.append("The Accused was entrusted with dominion over the complainant's property and dishonestly misappropriated the same.")
+    elif category == "defamation":
+        facts.append("The Accused published false imputations concerning the complainant to harm their social reputation.")
+    elif category == "trespass":
+        facts.append("The Accused entered into the property in lawful possession of the complainant with intent to intimidate or annoy.")
+    elif category == "hurt":
+        facts.append("The Accused intentionally caused physical pain and bodily injury to the complainant.")
+    elif category == "forgery":
+        facts.append("The Accused fabricated a false document or electronic record to support a fraudulent claim.")
+    elif category == "threat":
+        facts.append("The Accused threatened the complainant with injury with intent to cause alarm or force illegal actions.")
+
+    # Harm Formulation
+    harm = f"Wrongful loss of property and severe mental harassment due to actions of the Accused."
+    if amount != "unspecified amount":
+        harm = f"Significant financial loss amounting to {amount}, loss of proprietary rights, and severe emotional distress."
+    elif category == "hurt":
+        harm = "Severe physical injury, bodily pain, medical expenses, and emotional trauma."
+    elif category == "defamation":
+        harm = "Loss of professional credibility, severe reputation damage, and social isolation."
 
     location = user_location if user_location else "Delhi, India"
 
     return {
         "facts": facts,
         "timeline": timeline,
-        "parties": {"complainant": complainant, "accused": accused},
+        "parties": {"complainant": "User (Informant)", "accused": accused},
         "location": location,
         "harm": harm
     }

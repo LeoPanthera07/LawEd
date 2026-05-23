@@ -58,7 +58,7 @@ def orchestrate_case_analysis(db: Session, case_id: int, api_key: str = None, pr
     steps_log.append({"step": "Draft Brief Construction", "status": "completed", "details": "Compiled pre-filing Case Brief / Preparation package."})
     time.sleep(0.5)
 
-    # If Law Firm persona, execute the courtroom agents (LLM Court)
+    # If Law Firm persona, execute the courtroom debate lawyers
     if persona == "lawfirm":
         # Step 6: Plaintiff Counsel Opening
         case.active_step = "courtroom_plaintiff"
@@ -74,12 +74,12 @@ def orchestrate_case_analysis(db: Session, case_id: int, api_key: str = None, pr
         steps_log.append({"step": "Defense Counsel Objection", "status": "completed", "details": "Defense lawyer submitted counter-challenges challenging digital evidence integrity under Section 63 BSA."})
         time.sleep(0.5)
 
-        # Step 8: Adjudicating Judge verdict
-        case.active_step = "courtroom_judge"
-        db.commit()
-        judge_res = run_judge_agent(db, case_id, api_key, provider)
-        steps_log.append({"step": "Adjudicating Judicial Evaluation", "status": "completed", "details": "Hon'ble Judicial Magistrate ruled on prima facie case, calculated win probability, and compiled opponent strategy report."})
-        time.sleep(0.5)
+    # Step 8: Adjudicating Judge verdict (Executed for both portals to compute win probability!)
+    case.active_step = "courtroom_judge"
+    db.commit()
+    judge_res = run_judge_agent(db, case_id, api_key, provider)
+    steps_log.append({"step": "Adjudicating Judicial Evaluation", "status": "completed", "details": "Hon'ble Judicial Magistrate evaluated case parameters, calculated win probability, and compiled case brief."})
+    time.sleep(0.5)
 
     case.active_step = "completed"
     db.commit()
