@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attachedFiles: [],           // Local File objects waiting for upload
         isProcessing: false,
         pastCases: [],
+        userSession: null,           // Authenticated user session
         apiSettings: {
             provider: 'simulation',
             apiKey: ''
@@ -23,6 +24,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     // DOM Elements Cache
     // ---------------------------------------------------------
+    // Auth & Identity
+    const authOverlay = document.getElementById('auth-overlay');
+    const tabRoleCitizen = document.getElementById('tab-role-citizen');
+    const tabRoleLawfirm = document.getElementById('tab-role-lawfirm');
+    const formAuthLogin = document.getElementById('form-auth-login');
+    const formAuthSignup = document.getElementById('form-auth-signup');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const signupName = document.getElementById('signup-name');
+    const signupEmail = document.getElementById('signup-email');
+    const signupPassword = document.getElementById('signup-password');
+    const signupCourt = document.getElementById('signup-court');
+    const signupBarId = document.getElementById('signup-bar-id');
+    const groupLawfirmFields = document.getElementById('group-lawfirm-fields');
+    const linkShowSignup = document.getElementById('link-show-signup');
+    const linkShowLogin = document.getElementById('link-show-login');
+    const btnSignOut = document.getElementById('btn-sign-out');
+    const userDisplayName = document.getElementById('user-display-name');
+    const userDisplayDetails = document.getElementById('user-display-details');
+
     // Navigation / Workspace
     const bodyEl = document.body;
     const workspaceTitle = document.getElementById('workspace-title');
@@ -42,7 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewOutput = document.getElementById('view-output');
     const views = [viewIntake, viewProcessing, viewCourtroom, viewOutput];
 
-    // Intake Form & Uploads
+    // Intake Form, Uploads & UNIQUE-ID
+    const citizenIntakeWorkspace = document.getElementById('citizen-intake-workspace');
+    const lawfirmIntakeWorkspace = document.getElementById('lawfirm-intake-workspace');
+    const formCaseAcquire = document.getElementById('form-case-acquire');
+    const inputUniqueId = document.getElementById('input-unique-id');
+    const btnSubmitAcquire = document.getElementById('btn-submit-acquire');
+    const indUniqueIdDisplay = document.getElementById('ind-unique-id-display');
+
     const formCaseIntake = document.getElementById('form-case-intake');
     const inputGrievance = document.getElementById('input-grievance');
     const inputLocation = document.getElementById('input-location');
@@ -91,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const indStatuteStack = document.getElementById('ind-statute-stack');
     const indEvidenceAudit = document.getElementById('ind-evidence-audit');
     const indSafetyFlags = document.getElementById('ind-safety-flags');
+    const indInterpretationsList = document.getElementById('ind-interpretations-list');
+    const indPrecedentsList = document.getElementById('ind-precedents-list');
 
     // Law Firm Dashboard Outputs
     const dashboardLawfirm = document.getElementById('dashboard-lawfirm');
@@ -106,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const firmEvidenceAudit = document.getElementById('firm-evidence-audit');
     const firmSafetyFlags = document.getElementById('firm-safety-flags');
     const firmBriefText = document.getElementById('firm-brief-text');
+    const firmInterpretationsList = document.getElementById('firm-interpretations-list');
+    const firmPrecedentsList = document.getElementById('firm-precedents-list');
 
     // Settings Modal
     const modalSettings = document.getElementById('modal-settings');
@@ -116,15 +148,83 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSettingsClose = document.getElementById('btn-settings-close');
     const btnSettingsCancel = document.getElementById('btn-settings-cancel');
 
+    // Statute Details Modal
+    const modalStatute = document.getElementById('modal-statute');
+    const btnStatuteClose = document.getElementById('btn-statute-close');
+    const btnStatuteOk = document.getElementById('btn-statute-ok');
+
+    // Law Firm Tab buttons and cards
+    const btnTabAcquireDocket = document.getElementById('btn-tab-acquire-docket');
+    const btnTabDirectCase = document.getElementById('btn-tab-direct-case');
+    const cardAcquireDocket = document.getElementById('card-acquire-docket');
+
+    // Sidebar Collapse & User Writeup Tools
+    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+    const btnCopyWriteup = document.getElementById('btn-copy-writeup');
+    const btnPrintWriteup = document.getElementById('btn-print-writeup');
+
     // ---------------------------------------------------------
     // App Initialization
     // ---------------------------------------------------------
     function init() {
         loadSettingsFromLocalStorage();
-        updateThemeClass();
-        switchView('intake');
-        fetchPastCases();
+        checkUserAuthentication();
         setupEventListeners();
+    }
+
+    function checkUserAuthentication() {
+        const storedSession = localStorage.getItem('lawed_session');
+        if (storedSession) {
+            try {
+                const session = JSON.parse(storedSession);
+                state.userSession = session.user;
+                state.activePersona = session.user.user_type === 'lawfirm' ? 'lawfirm' : 'individual';
+                
+                // Hide Auth overlay, show Workspace layout
+                authOverlay.style.display = 'none';
+                bodyEl.classList.remove('theme-light', 'theme-dark');
+                bodyEl.classList.add('theme-light');
+                
+                document.querySelector('.app-layout').style.display = 'grid';
+
+                // Display active counsel profile details
+                userDisplayName.innerText = state.userSession.full_name;
+                if (state.userSession.user_type === 'lawfirm') {
+                    userDisplayDetails.innerText = `${state.userSession.court_name || 'Litigation Counsel'} | ${state.userSession.bar_council_id || 'BC'}`;
+                } else {
+                    userDisplayDetails.innerText = `Citizen Complainant`;
+                }
+
+                // Enforce role-based workspace layouts conditionally
+                const personaContainer = document.querySelector('.persona-selector-container');
+                if (personaContainer) {
+                    personaContainer.style.display = 'none'; // Lock segmented roles switcher completely (RBAC)
+                }
+
+                if (state.userSession.user_type === 'lawfirm') {
+                    citizenIntakeWorkspace.style.display = 'none';
+                    lawfirmIntakeWorkspace.style.display = 'flex';
+                } else {
+                    citizenIntakeWorkspace.style.display = 'block';
+                    lawfirmIntakeWorkspace.style.display = 'none';
+                }
+
+                updateThemeClass();
+                fetchPastCases();
+            } catch (e) {
+                console.error("Invalid session format", e);
+                localStorage.removeItem('lawed_session');
+                showAuthOverlay();
+            }
+        } else {
+            showAuthOverlay();
+        }
+    }
+
+    function showAuthOverlay() {
+        state.userSession = null;
+        authOverlay.style.display = 'flex';
+        document.querySelector('.app-layout').style.display = 'none';
     }
 
     // ---------------------------------------------------------
@@ -226,6 +326,125 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnSettingsClose.addEventListener('click', () => modalSettings.classList.remove('show'));
         btnSettingsCancel.addEventListener('click', () => modalSettings.classList.remove('show'));
+
+        // Statute details modal buttons
+        btnStatuteClose.addEventListener('click', () => modalStatute.classList.remove('show'));
+        btnStatuteOk.addEventListener('click', () => modalStatute.classList.remove('show'));
+
+        // Law Firm sub-tab controls
+        btnTabAcquireDocket.addEventListener('click', () => {
+            btnTabAcquireDocket.classList.add('active');
+            btnTabDirectCase.classList.remove('active');
+
+            // Apply active visual styling to tabs
+            btnTabAcquireDocket.style.background = 'var(--color-primary)';
+            btnTabAcquireDocket.style.color = 'var(--bg-panel)';
+            btnTabDirectCase.style.background = 'transparent';
+            btnTabDirectCase.style.color = 'var(--color-foreground)';
+
+            cardAcquireDocket.style.display = 'block';
+            citizenIntakeWorkspace.style.display = 'none';
+
+            // Ensure active persona is set to lawfirm
+            state.activePersona = 'lawfirm';
+            updateThemeClass();
+        });
+
+        btnTabDirectCase.addEventListener('click', () => {
+            btnTabDirectCase.classList.add('active');
+            btnTabAcquireDocket.classList.remove('active');
+
+            // Apply active visual styling to tabs
+            btnTabDirectCase.style.background = 'var(--color-primary)';
+            btnTabDirectCase.style.color = 'var(--bg-panel)';
+            btnTabAcquireDocket.style.background = 'transparent';
+            btnTabAcquireDocket.style.color = 'var(--color-foreground)';
+
+            cardAcquireDocket.style.display = 'none';
+            citizenIntakeWorkspace.style.display = 'block';
+
+            // Ensure active persona is set to lawfirm
+            state.activePersona = 'lawfirm';
+            updateThemeClass();
+        });
+
+        // Sidebar Collapse control
+        btnToggleSidebar.addEventListener('click', () => {
+            document.querySelector('.app-layout').classList.toggle('sidebar-collapsed');
+        });
+
+        // Copy Case Brief / Writeup
+        btnCopyWriteup.addEventListener('click', () => {
+            const txt = document.getElementById('ind-brief-text').innerText;
+            navigator.clipboard.writeText(txt).then(() => {
+                const prevText = btnCopyWriteup.innerText;
+                btnCopyWriteup.innerText = 'Copied!';
+                setTimeout(() => { btnCopyWriteup.innerText = prevText; }, 2000);
+            }).catch(err => {
+                console.error('Could not copy writeup: ', err);
+            });
+        });
+
+        // Print Writeup Only
+        btnPrintWriteup.addEventListener('click', () => {
+            const briefContent = document.getElementById('ind-brief-text').innerText;
+            const uniqueId = document.getElementById('ind-unique-id-display').innerText;
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Case Writeup - Docket Reference</title>
+                    <style>
+                        body { font-family: Georgia, serif; line-height: 1.6; padding: 40px; color: #1a1a1a; max-width: 800px; margin: 0 auto; }
+                        h1 { font-family: sans-serif; font-size: 24px; border-bottom: 2px solid #a99260; padding-bottom: 12px; margin-bottom: 20px; }
+                        pre { white-space: pre-wrap; font-family: Georgia, serif; font-size: 16px; }
+                        .meta { margin-bottom: 30px; font-size: 14px; color: #666; font-family: sans-serif; }
+                    </style>
+                </head>
+                <body>
+                    <h1>FORMULATED COMPLAINT BRIEF (WRITEUP)</h1>
+                    <div class="meta">
+                        <strong>Docket Unique Reference ID:</strong> ${uniqueId}<br>
+                        <strong>Generated on:</strong> ${new Date().toLocaleDateString('en-GB')}
+                    </div>
+                    <pre>${briefContent}</pre>
+                    <script>window.onload = function() { window.print(); window.close(); }</script>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        });
+
+        // Individual dashboard tabs toggle listeners
+        const userTabBtns = document.querySelectorAll('.user-tab-btn');
+        const userTabContents = document.querySelectorAll('.user-tab-content');
+        
+        userTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.getAttribute('data-tab');
+                
+                userTabBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--color-foreground)';
+                });
+                btn.classList.add('active');
+                btn.style.background = 'var(--color-primary)';
+                btn.style.color = 'var(--bg-panel)';
+                
+                userTabContents.forEach(content => {
+                    if (content.id === tabName) {
+                        if (tabName === 'user-tab-timeline') {
+                            content.style.display = 'flex'; // Timeline uses flex-direction column
+                        } else {
+                            content.style.display = 'block';
+                        }
+                    } else {
+                        content.style.display = 'none';
+                    }
+                });
+            });
+        });
         
         byokProvider.addEventListener('change', toggleApiKeyInputVisibility);
 
@@ -270,6 +489,199 @@ document.addEventListener('DOMContentLoaded', () => {
             switchView('output');
             loadDashboardDetails(state.activeCaseId);
         });
+
+        // --- AUTH & RBAC EVENT LISTENERS ---
+        // Tab Role Switches (Citizen vs Law Firm)
+        tabRoleCitizen.addEventListener('click', () => {
+            tabRoleCitizen.classList.add('active');
+            tabRoleLawfirm.classList.remove('active');
+            document.getElementById('login-form-title').innerText = "Citizen Login";
+            document.getElementById('signup-form-title').innerText = "Citizen Sign Up";
+            groupLawfirmFields.style.display = 'none';
+        });
+
+        tabRoleLawfirm.addEventListener('click', () => {
+            tabRoleLawfirm.classList.add('active');
+            tabRoleCitizen.classList.remove('active');
+            document.getElementById('login-form-title').innerText = "Law Firm Login";
+            document.getElementById('signup-form-title').innerText = "Law Firm Sign Up";
+            groupLawfirmFields.style.display = 'block';
+        });
+
+        // Switch Forms (Login / Signup)
+        linkShowSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            formAuthLogin.style.display = 'none';
+            formAuthSignup.style.display = 'block';
+        });
+
+        linkShowLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            formAuthSignup.style.display = 'none';
+            formAuthLogin.style.display = 'block';
+        });
+
+        // Profile Sign Out
+        btnSignOut.addEventListener('click', handleSignOut);
+
+        // Submit Forms
+        formAuthLogin.addEventListener('submit', handleAuthLogin);
+        formAuthSignup.addEventListener('submit', handleAuthSignup);
+        formCaseAcquire.addEventListener('submit', handleCaseAcquisition);
+    }
+
+    // ---------------------------------------------------------
+    // Authentication & Case Acquisition Handlers (RBAC & Unique ID)
+    // ---------------------------------------------------------
+    async function handleAuthLogin(e) {
+        e.preventDefault();
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
+        const activeTab = document.querySelector('.auth-role-tab.active');
+        const role = activeTab ? activeTab.getAttribute('data-role') : 'individual';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Authentication failed.");
+            }
+
+            const data = await res.json();
+            const loggedInUserType = data.user?.user_type;
+
+            if (role === 'individual' && loggedInUserType !== 'individual') {
+                throw new Error("This account is registered as a Law Firm. Please select the Law Firm workspace to log in.");
+            }
+            if (role === 'lawfirm' && loggedInUserType !== 'lawfirm') {
+                throw new Error("This account is registered as an Individual. Please select the Citizen workspace to log in.");
+            }
+
+            localStorage.setItem('lawed_session', JSON.stringify(data));
+            checkUserAuthentication();
+            loginEmail.value = '';
+            loginPassword.value = '';
+            
+            // Switch views based on persona
+            switchView('intake');
+        } catch (error) {
+            alert("Login failed: " + error.message);
+        }
+    }
+
+    async function handleAuthSignup(e) {
+        e.preventDefault();
+        const activeTab = document.querySelector('.auth-role-tab.active');
+        const role = activeTab.getAttribute('data-role');
+
+        const email = signupEmail.value.trim();
+        const password = signupPassword.value;
+        const name = signupName.value.trim();
+        const court = signupCourt.value.trim();
+        const barId = signupBarId.value.trim();
+
+        try {
+            const payload = {
+                email,
+                password,
+                full_name: name,
+                user_type: role
+            };
+
+            if (role === 'lawfirm') {
+                payload.court_name = court || "Delhi High Court";
+                payload.bar_council_id = barId || "BC-DEFAULT";
+            }
+
+            const res = await fetch(`${API_BASE}/api/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Signup registration failed.");
+            }
+
+            alert("Signup successful! You can now log in using your credentials.");
+            signupEmail.value = '';
+            signupPassword.value = '';
+            signupName.value = '';
+            signupCourt.value = '';
+            signupBarId.value = '';
+            
+            // Toggle back to login form
+            formAuthSignup.style.display = 'none';
+            formAuthLogin.style.display = 'block';
+        } catch (error) {
+            alert("Signup failed: " + error.message);
+        }
+    }
+
+    function handleSignOut() {
+        if (confirm("Are you sure you want to sign out from the legal advisory portal?")) {
+            localStorage.removeItem('lawed_session');
+            showAuthOverlay();
+            startNewCaseFlow();
+        }
+    }
+
+    async function handleCaseAcquisition(e) {
+        e.preventDefault();
+        const uniqueId = inputUniqueId.value.trim().toUpperCase();
+        if (!uniqueId || !state.userSession) return;
+
+        state.isProcessing = true;
+        btnSubmitAcquire.disabled = true;
+        btnSubmitAcquire.innerHTML = 'Acquiring Docket & Running Courtroom Battle... <span class="spinner-ring" style="width:14px;height:14px;margin:0;border-width:2px;"></span>';
+
+        try {
+            const res = await fetch(`${API_BASE}/api/cases/acquire`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    unique_id: uniqueId,
+                    acquired_by_firm_id: state.userSession.id
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Case acquisition failed.");
+            }
+
+            const data = await res.json();
+            const caseId = data.case_id;
+            state.activeCaseId = caseId;
+            state.activePersona = 'lawfirm';
+
+            // Switch to processing animation sequence
+            switchView('processing');
+            resetAgentVisualStatus();
+            agentCourtroomGroup.style.display = 'block';
+
+            // Sequencing
+            await animateAgentSequence();
+
+            // Transition to simulated courtroom Objections
+            switchView('courtroom');
+            loadCourtroomObjections(caseId);
+
+            // Reset inputs
+            inputUniqueId.value = '';
+        } catch (error) {
+            alert("Case acquisition failed: " + error.message);
+        } finally {
+            state.isProcessing = false;
+            btnSubmitAcquire.disabled = false;
+            btnSubmitAcquire.innerHTML = 'Acquire & Simulate Courtroom Adjudication';
+        }
     }
 
     // ---------------------------------------------------------
@@ -372,6 +784,13 @@ document.addEventListener('DOMContentLoaded', () => {
             caseData.append("grievance", grievance);
             caseData.append("location", location);
             caseData.append("user_persona", persona);
+            if (state.userSession && state.userSession.id) {
+                if (state.userSession.user_type === 'lawfirm') {
+                    caseData.append("acquired_by_firm_id", state.userSession.id);
+                } else {
+                    caseData.append("citizen_id", state.userSession.id);
+                }
+            }
 
             const res = await fetch(`${API_BASE}/api/cases`, {
                 method: "POST",
@@ -382,6 +801,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const caseResult = await res.json();
             const caseId = caseResult.case_id;
             state.activeCaseId = caseId;
+
+            if (caseResult.unique_id && indUniqueIdDisplay) {
+                indUniqueIdDisplay.innerText = caseResult.unique_id;
+            }
             
             addConsoleLine(`Case registered successfully. ID Assigned: L-00${caseId}`, "success");
 
@@ -443,38 +866,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Trigger asynchronous agent analysis API route
-            // Since this runs in a couple of seconds synchronously on mock/fast completions,
-            // we will simulate the pulsing visual steps with slight intervals or bind directly to the JSON response
-            
             // Update Active Indicators sequentially to make it feel premium, pulsing, and active!
             await animateAgentSequence();
-
-            const res = await fetch(`${API_BASE}/api/cases/${caseId}/analyze`, {
-                method: "POST",
-                headers: headers
-            });
-
-            if (!res.ok) throw new Error("Agentic orchestrator encountered an error.");
-            const results = await res.json();
             
-            addConsoleLine("Multi-agent analysis complete. Structuring outcomes.", "success");
+            addConsoleLine("Multi-agent baseline mapping complete. Formulating Complainant brief...", "success");
             
-            // Step D: Direct next navigation
+            // Direct next navigation
             setTimeout(() => {
                 state.isProcessing = false;
                 btnSubmitCase.disabled = false;
                 btnSubmitCase.innerHTML = 'Initiate Mapping Sequence';
                 
-                if (state.activePersona === 'lawfirm') {
-                    // Transition to simulated courtroom arena
-                    switchView('courtroom');
-                    loadCourtroomObjections(caseId);
-                } else {
-                    // Transition straight to Output Brief
-                    switchView('output');
-                    loadDashboardDetails(caseId);
-                }
+                // Transition straight to Output Brief
+                switchView('output');
+                loadDashboardDetails(caseId);
                 
                 fetchPastCases();
             }, 1000);
@@ -489,101 +894,156 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetAgentVisualStatus() {
-        consoleLogs.innerHTML = '';
+        if (consoleLogs) consoleLogs.innerHTML = '';
         const rows = [rowAgentIntake, rowAgentEvidence, rowAgentLegal, rowAgentReview, rowAgentDrafting, rowAgentPlaintiff, rowAgentDefense, rowAgentJudge];
         const statuses = [statusAgentIntake, statusAgentEvidence, statusAgentLegal, statusAgentReview, statusAgentDrafting, statusAgentPlaintiff, statusAgentDefense, statusAgentJudge];
         
-        rows.forEach(r => r.classList.remove('active', 'completed'));
-        statuses.forEach(s => s.innerText = "Waiting in pool...");
+        rows.forEach(r => { if (r) r.classList.remove('active', 'completed'); });
+        statuses.forEach(s => { if (s) s.innerText = "Waiting in pool... "; });
+
+        // Reset progress bar
+        const progressBar = document.getElementById('processing-progress-bar');
+        const statusText = document.getElementById('processing-status-text');
+        const stepDetail = document.getElementById('processing-step-detail');
+        if (progressBar) progressBar.style.width = '0%';
+        if (statusText) statusText.innerText = 'Initializing cooperative agents...';
+        if (stepDetail) stepDetail.innerText = 'Connecting multi-agent neural thread...';
     }
 
     async function animateAgentSequence() {
         const delay = (ms) => new Promise(res => setTimeout(res, ms));
+        const statusText = document.getElementById('processing-status-text');
+        const progressBar = document.getElementById('processing-progress-bar');
+        const stepDetail = document.getElementById('processing-step-detail');
         
-        // Intake
-        rowAgentIntake.classList.add('active');
-        statusAgentIntake.innerText = "Processing grievance facts...";
+        const updateProgress = (percentage, title, detail) => {
+            if (statusText) statusText.innerText = title;
+            if (progressBar) progressBar.style.width = `${percentage}%`;
+            if (stepDetail) stepDetail.innerText = detail;
+        };
+        
+        // Intake (20%)
+        if (rowAgentIntake) rowAgentIntake.classList.add('active');
+        if (statusAgentIntake) statusAgentIntake.innerText = "Processing grievance facts...";
         addConsoleLine("> Intake Fact Extractor: Parsing sentence semantic frames...", "info");
+        updateProgress(20, "Extracting case facts and key parameters...", "Extracting core grievance facts and locations...");
         await delay(1200);
-        rowAgentIntake.classList.remove('active');
-        rowAgentIntake.classList.add('completed');
-        statusAgentIntake.innerText = "Facts extracted successfully.";
+        if (rowAgentIntake) {
+            rowAgentIntake.classList.remove('active');
+            rowAgentIntake.classList.add('completed');
+        }
+        if (statusAgentIntake) statusAgentIntake.innerText = "Facts extracted successfully.";
         addConsoleLine("> Intake Fact Extractor: Facts database records created.", "success");
 
-        // Evidence
-        rowAgentEvidence.classList.add('active');
-        statusAgentEvidence.innerText = "Scanning attachments for credibility...";
+        // Evidence (40%)
+        if (rowAgentEvidence) rowAgentEvidence.classList.add('active');
+        if (statusAgentEvidence) statusAgentEvidence.innerText = "Scanning attachments for credibility...";
         addConsoleLine("> Evidence Verifier: Running simulated OCR text extraction...", "info");
+        updateProgress(40, "Analyzing attached evidence files...", "Scanning attachments and auditing admissibility...");
         await delay(1000);
-        rowAgentEvidence.classList.remove('active');
-        rowAgentEvidence.classList.add('completed');
-        statusAgentEvidence.innerText = "Evidence credibility rated.";
+        if (rowAgentEvidence) {
+            rowAgentEvidence.classList.remove('active');
+            rowAgentEvidence.classList.add('completed');
+        }
+        if (statusAgentEvidence) statusAgentEvidence.innerText = "Evidence credibility rated.";
         addConsoleLine("> Evidence Verifier: Digital files assigned support ratings.", "success");
 
-        // Legal (RAG)
-        rowAgentLegal.classList.add('active');
-        statusAgentLegal.innerText = "Matching sections in BNS, BSA, BNSS...";
+        // Legal (RAG) (60%)
+        if (rowAgentLegal) rowAgentLegal.classList.add('active');
+        if (statusAgentLegal) statusAgentLegal.innerText = "Matching sections in BNS, BSA, BNSS...";
         addConsoleLine("> Statutory RAG Matcher: Querying corpus index files...", "info");
+        updateProgress(60, "Mapping statutory provisions (BNS, BSA, BNSS)...", "Mapping relevant BNS, BNSS, and BSA statutes...");
         await delay(1300);
-        rowAgentLegal.classList.remove('active');
-        rowAgentLegal.classList.add('completed');
-        statusAgentLegal.innerText = "Statutes mapped successfully.";
+        if (rowAgentLegal) {
+            rowAgentLegal.classList.remove('active');
+            rowAgentLegal.classList.add('completed');
+        }
+        if (statusAgentLegal) statusAgentLegal.innerText = "Statutes mapped successfully.";
         addConsoleLine("> Statutory RAG Matcher: Sections BNS 318, BSA 63, BNSS 173 bound.", "success");
 
-        // Review
-        rowAgentReview.classList.add('active');
-        statusAgentReview.innerText = "Analyzing litigation risks and gaps...";
+        // Review (80%)
+        if (rowAgentReview) rowAgentReview.classList.add('active');
+        if (statusAgentReview) statusAgentReview.innerText = "Analyzing litigation risks and gaps...";
         addConsoleLine("> Integrity Reviewer: Verifying digital certificates requirements under Section 63 BSA...", "info");
+        updateProgress(80, "Auditing legal compliance and integrity flags...", "Checking litigation risks and digital evidence requirements...");
         await delay(1100);
-        rowAgentReview.classList.remove('active');
-        rowAgentReview.classList.add('completed');
-        statusAgentReview.innerText = "Integrity checked. Risks flagged.";
+        if (rowAgentReview) {
+            rowAgentReview.classList.remove('active');
+            rowAgentReview.classList.add('completed');
+        }
+        if (statusAgentReview) statusAgentReview.innerText = "Integrity checked. Risks flagged.";
         addConsoleLine("> Integrity Reviewer: Safety alerts compiled.", "success");
 
-        // Drafting
-        rowAgentDrafting.classList.add('active');
-        statusAgentDrafting.innerText = "Building pre-filing Case Brief...";
+        // Drafting (90%)
+        if (rowAgentDrafting) rowAgentDrafting.classList.add('active');
+        if (statusAgentDrafting) statusAgentDrafting.innerText = "Building pre-filing Case Brief...";
         addConsoleLine("> Case Brief Drafter: Formulating legal brief structure...", "info");
+        updateProgress(90, "Formulating case docket and brief writeup...", "Compiling pre-filing Case Docket and Writeup...");
         await delay(1000);
-        rowAgentDrafting.classList.remove('active');
-        rowAgentDrafting.classList.add('completed');
-        statusAgentDrafting.innerText = "Case Brief draft constructed.";
+        if (rowAgentDrafting) {
+            rowAgentDrafting.classList.remove('active');
+            rowAgentDrafting.classList.add('completed');
+        }
+        if (statusAgentDrafting) statusAgentDrafting.innerText = "Case Brief draft constructed.";
         addConsoleLine("> Case Brief Drafter: Completed Case Preparation Package.", "success");
 
         if (state.activePersona === 'lawfirm') {
-            // Plaintiff
-            rowAgentPlaintiff.classList.add('active');
-            statusAgentPlaintiff.innerText = "Structuring Prosecution opening arguments...";
+            // Plaintiff (93%)
+            if (rowAgentPlaintiff) rowAgentPlaintiff.classList.add('active');
+            if (statusAgentPlaintiff) statusAgentPlaintiff.innerText = "Structuring Prosecution opening arguments...";
             addConsoleLine("> Complainant Opening Counsel: Citing BNS and mapping facts to elements...", "info");
+            updateProgress(93, "Simulating opening arguments...", "Formulating Prosecution arguments under BNS...");
             await delay(1000);
-            rowAgentPlaintiff.classList.remove('active');
-            rowAgentPlaintiff.classList.add('completed');
-            statusAgentPlaintiff.innerText = "Aggressive Opening compiled.";
+            if (rowAgentPlaintiff) {
+                rowAgentPlaintiff.classList.remove('active');
+                rowAgentPlaintiff.classList.add('completed');
+            }
+            if (statusAgentPlaintiff) statusAgentPlaintiff.innerText = "Aggressive Opening compiled.";
             addConsoleLine("> Complainant Opening Counsel: Opened litigation.", "success");
 
-            // Defense
-            rowAgentDefense.classList.add('active');
-            statusAgentDefense.innerText = "Formulating defense hurdles & objections...";
+            // Defense (96%)
+            if (rowAgentDefense) rowAgentDefense.classList.add('active');
+            if (statusAgentDefense) statusAgentDefense.innerText = "Formulating defense hurdles & objections...";
             addConsoleLine("> Defense Objection Counsel: Searching admissibility issues under BSA Section 63...", "info");
+            updateProgress(96, "Evaluating opposing defense hurdles...", "Drafting Defense objections under BSA Section 63...");
             await delay(1200);
-            rowAgentDefense.classList.remove('active');
-            rowAgentDefense.classList.add('completed');
-            statusAgentDefense.innerText = "Adversarial challenges prepared.";
+            if (rowAgentDefense) {
+                rowAgentDefense.classList.remove('active');
+                rowAgentDefense.classList.add('completed');
+            }
+            if (statusAgentDefense) statusAgentDefense.innerText = "Adversarial challenges prepared.";
             addConsoleLine("> Defense Objection Counsel: Lodged digital evidence objection.", "success");
 
-            // Judge
-            rowAgentJudge.classList.add('active');
-            statusAgentJudge.innerText = "Summoning verdict and probability rates...";
+            // Judge (100%)
+            if (rowAgentJudge) rowAgentJudge.classList.add('active');
+            if (statusAgentJudge) statusAgentJudge.innerText = "Summoning verdict and probability rates...";
             addConsoleLine("> Judicial Adjudicator: Weighting arguments. Summing evidence rates...", "info");
+            updateProgress(100, "Adjudicating courtroom outcome and win probability...", "Magistrate is writing final verdict and Litigious guidelines...");
             await delay(1000);
-            rowAgentJudge.classList.remove('active');
-            rowAgentJudge.classList.add('completed');
-            statusAgentJudge.innerText = "Hon'ble Magistrate verdict filed.";
+            if (rowAgentJudge) {
+                rowAgentJudge.classList.remove('active');
+                rowAgentJudge.classList.add('completed');
+            }
+            if (statusAgentJudge) statusAgentJudge.innerText = "Hon'ble Magistrate verdict filed.";
             addConsoleLine("> Judicial Adjudicator: Case evaluation finished.", "success");
+        } else {
+            // Citizen Judge baseline (100%)
+            if (rowAgentJudge) rowAgentJudge.classList.add('active');
+            if (statusAgentJudge) statusAgentJudge.innerText = "Calculating case strength baseline...";
+            addConsoleLine("> Judicial Adjudicator: Determining win probability index...", "info");
+            updateProgress(100, "Finalizing case file and dossier...", "Magistrate is finalizing win probability index...");
+            await delay(1000);
+            if (rowAgentJudge) {
+                rowAgentJudge.classList.remove('active');
+                rowAgentJudge.classList.add('completed');
+            }
+            if (statusAgentJudge) statusAgentJudge.innerText = "Win index verified.";
+            addConsoleLine("> Judicial Adjudicator: Case strength calculated.", "success");
         }
     }
 
     function addConsoleLine(text, type = "") {
+        if (!consoleLogs) return;
         const line = document.createElement('div');
         line.className = `console-line ${type}`;
         line.innerText = text;
@@ -699,6 +1159,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 dashboardIndividual.style.display = 'block';
                 dashboardLawfirm.style.display = 'none';
                 renderIndividualDashboard(data);
+                
+                // Reset Complainant sub-tabs to default active writeup tab!
+                const writeupTabBtn = document.querySelector('.user-tab-btn[data-tab="user-tab-writeup"]');
+                if (writeupTabBtn) writeupTabBtn.click();
             }
 
         } catch (error) {
@@ -707,99 +1171,160 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderIndividualDashboard(data) {
-        // Parties
-        indPartyComplainant.innerText = data.parties?.complainant || "User (Informant)";
-        indPartyAccused.innerText = data.parties?.accused || "Accused Suspect";
-
-        // Facts
-        indFactsList.innerHTML = '';
-        if (data.facts && data.facts.length > 0) {
-            data.facts.forEach(fact => {
-                const li = document.createElement('li');
-                li.innerText = fact;
-                indFactsList.appendChild(li);
+    function renderInterpretations(container, interpretations) {
+        if (!container) return;
+        container.innerHTML = '';
+        if (interpretations && interpretations.length > 0) {
+            interpretations.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'interpretation-item';
+                div.innerHTML = `
+                    <div class="interpretation-clause-header">
+                        <span>${item.clause_number}</span>
+                        <span>${item.act_title}</span>
+                    </div>
+                    <div class="interpretation-fact">"${item.user_fact_mapping}"</div>
+                    <div class="interpretation-opinion">${item.legal_opinion}</div>
+                `;
+                container.appendChild(div);
             });
         } else {
-            indFactsList.innerHTML = '<li>No facts extracted. Narrative might be too sparse.</li>';
+            container.innerHTML = '<p class="text-muted">No statutory interpretations compiled for this case.</p>';
+        }
+    }
+
+    function renderPrecedents(container, precedents) {
+        if (!container) return;
+        container.innerHTML = '';
+        if (precedents && precedents.length > 0) {
+            precedents.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'precedent-card';
+                card.innerHTML = `
+                    <div class="precedent-header">
+                        <h4 class="precedent-name">${item.case_name}</h4>
+                        <span class="precedent-citation-badge">${item.citation} (${item.year})</span>
+                    </div>
+                    <div class="precedent-summary">
+                        <strong>Brief Holding:</strong> ${item.summary}
+                    </div>
+                    <div class="precedent-relevance">
+                        <strong>Statutory Relevance:</strong> ${item.relevance}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = '<p class="text-muted">No landmark Supreme Court precedents mapped for these offense segments.</p>';
+        }
+    }
+
+    function renderIndividualDashboard(data) {
+        // Parties
+        if (indPartyComplainant) indPartyComplainant.innerText = data.parties?.complainant || "User (Informant)";
+        if (indPartyAccused) indPartyAccused.innerText = data.parties?.accused || "Accused Suspect";
+
+        // Facts
+        if (indFactsList) {
+            indFactsList.innerHTML = '';
+            if (data.facts && data.facts.length > 0) {
+                data.facts.forEach(fact => {
+                    const li = document.createElement('li');
+                    li.innerText = fact;
+                    indFactsList.appendChild(li);
+                });
+            } else {
+                indFactsList.innerHTML = '<li>No facts extracted. Narrative might be too sparse.</li>';
+            }
         }
 
         // Timeline
-        indTimelineList.innerHTML = '';
-        if (data.timeline && data.timeline.length > 0) {
-            data.timeline.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'timeline-v-item';
-                item.innerHTML = `
-                    <div class="timeline-v-node"></div>
-                    <div class="timeline-v-date font-outfit">${t.date}</div>
-                    <div class="timeline-v-event font-inter">${t.event}</div>
-                `;
-                indTimelineList.appendChild(item);
-            });
-        } else {
-            indTimelineList.innerHTML = '<p class="text-muted">No chronological markers detected in the grievance.</p>';
+        if (indTimelineList) {
+            indTimelineList.innerHTML = '';
+            if (data.timeline && data.timeline.length > 0) {
+                data.timeline.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-v-item';
+                    item.innerHTML = `
+                        <div class="timeline-v-node"></div>
+                        <div class="timeline-v-date font-outfit">${t.date}</div>
+                        <div class="timeline-v-event font-inter">${t.event}</div>
+                    `;
+                    indTimelineList.appendChild(item);
+                });
+            } else {
+                indTimelineList.innerHTML = '<p class="text-muted">No chronological markers detected in the grievance.</p>';
+            }
         }
 
         // Draft case Brief
-        indBriefText.innerText = data.case_brief || "Case brief draft construction was skipped.";
+        if (indBriefText) indBriefText.innerText = data.case_brief || "Case brief draft construction was skipped.";
 
         // Statutes
-        indStatuteStack.innerHTML = '';
-        if (data.statutes && data.statutes.length > 0) {
-            data.statutes.forEach(s => {
-                const card = document.createElement('div');
-                card.className = 'statute-pill-card';
-                card.innerHTML = `
-                    <div class="statute-pill-header">
-                        <span class="statute-pill-num text-accent">Sec ${s.section_number}</span>
-                        <span class="statute-pill-act">${s.code_type}</span>
-                    </div>
-                    <div class="statute-pill-title font-outfit">${s.section_title}</div>
-                    <div class="statute-pill-desc">${s.description || ""}</div>
-                    ${s.punishment ? `<div class="statute-pill-punish"><strong class="text-accent">Punishment:</strong> ${s.punishment}</div>` : ''}
-                    ${s.procedural_route ? `<div class="statute-pill-route"><strong>Filing Route:</strong> ${s.procedural_route}</div>` : ''}
-                `;
-                indStatuteStack.appendChild(card);
-            });
-        } else {
-            indStatuteStack.innerHTML = '<p class="text-muted">No specific penal code matches found.</p>';
+        if (indStatuteStack) {
+            indStatuteStack.innerHTML = '';
+            if (data.statutes && data.statutes.length > 0) {
+                data.statutes.forEach(s => {
+                    const card = document.createElement('div');
+                    card.className = 'statute-pill-card-mini';
+                    card.style.cursor = 'pointer';
+                    card.innerHTML = `
+                        <div class="statute-pill-header">
+                            <span class="statute-pill-num text-accent">Sec ${s.section_number}</span>
+                            <span class="statute-pill-act">${s.code_type}</span>
+                        </div>
+                        <div class="statute-pill-title font-outfit" style="margin-top: 4px;">${s.section_title}</div>
+                    `;
+                    card.addEventListener('click', () => openStatuteModal(s));
+                    indStatuteStack.appendChild(card);
+                });
+            } else {
+                indStatuteStack.innerHTML = '<p class="text-muted">No specific penal code matches found.</p>';
+            }
         }
 
         // Evidence Audit
-        indEvidenceAudit.innerHTML = '';
-        if (data.evidence && data.evidence.length > 0) {
-            data.evidence.forEach(e => {
-                const card = document.createElement('div');
-                card.className = 'audit-card';
-                let ratingClass = e.support_rating?.toLowerCase() || 'medium';
-                
-                card.innerHTML = `
-                    <span class="audit-card-title">${e.filename}</span>
-                    <span class="evidence-rating-pill ${ratingClass}">${e.support_rating}</span>
-                `;
-                indEvidenceAudit.appendChild(card);
-            });
-        } else {
-            indEvidenceAudit.innerHTML = '<p class="evidence-list-empty">No attachments analyzed. Admissibility audit skipped.</p>';
+        if (indEvidenceAudit) {
+            indEvidenceAudit.innerHTML = '';
+            if (data.evidence && data.evidence.length > 0) {
+                data.evidence.forEach(e => {
+                    const card = document.createElement('div');
+                    card.className = 'audit-card';
+                    let ratingClass = e.support_rating?.toLowerCase() || 'medium';
+                    
+                    card.innerHTML = `
+                        <span class="audit-card-title">${e.filename}</span>
+                        <span class="evidence-rating-pill ${ratingClass}">${e.support_rating}</span>
+                    `;
+                    indEvidenceAudit.appendChild(card);
+                });
+            } else {
+                indEvidenceAudit.innerHTML = '<p class="evidence-list-empty">No attachments analyzed. Admissibility audit skipped.</p>';
+            }
         }
 
         // Safety Flags
-        indSafetyFlags.innerHTML = '';
-        if (data.flags && data.flags.length > 0) {
-            data.flags.forEach(f => {
-                const card = document.createElement('div');
-                const isHigh = f.severity === 'High';
-                card.className = `safety-flag-card ${isHigh ? 'high' : ''}`;
-                card.innerHTML = `
-                    <div class="safety-flag-title font-outfit">${f.flag_title}</div>
-                    <div class="safety-flag-msg font-inter">${f.message}</div>
-                `;
-                indSafetyFlags.appendChild(card);
-            });
-        } else {
-            indSafetyFlags.innerHTML = '<p class="text-muted">Completeness checks passed. No litigation flags raised.</p>';
+        if (indSafetyFlags) {
+            indSafetyFlags.innerHTML = '';
+            if (data.flags && data.flags.length > 0) {
+                data.flags.forEach(f => {
+                    const card = document.createElement('div');
+                    const isHigh = f.severity === 'High';
+                    card.className = `safety-flag-card ${isHigh ? 'high' : ''}`;
+                    card.innerHTML = `
+                        <div class="safety-flag-title font-outfit">${f.flag_title}</div>
+                        <div class="safety-flag-msg font-inter">${f.message}</div>
+                    `;
+                    indSafetyFlags.appendChild(card);
+                });
+            } else {
+                indSafetyFlags.innerHTML = '<p class="text-muted">Completeness checks passed. No litigation flags raised.</p>';
+            }
         }
+
+        // Render statutory cognitive interpretations & landmark precedents
+        renderInterpretations(indInterpretationsList, data.interpretations);
+        renderPrecedents(indPrecedentsList, data.precedents);
     }
 
     function renderLawfirmDashboard(data) {
@@ -808,87 +1333,101 @@ document.addEventListener('DOMContentLoaded', () => {
         animateRadialGauge(prob);
 
         // Timeline & Dossier
-        firmPartyComplainant.innerText = data.parties?.complainant || "Prosecution";
-        firmPartyAccused.innerText = data.parties?.accused || "Accused";
+        if (firmPartyComplainant) firmPartyComplainant.innerText = data.parties?.complainant || "Prosecution";
+        if (firmPartyAccused) firmPartyAccused.innerText = data.parties?.accused || "Accused";
 
-        firmTimelineList.innerHTML = '';
-        if (data.timeline && data.timeline.length > 0) {
-            data.timeline.forEach(t => {
-                const item = document.createElement('div');
-                item.className = 'timeline-v-item';
-                item.innerHTML = `
-                    <div class="timeline-v-node"></div>
-                    <div class="timeline-v-date font-outfit">${t.date}</div>
-                    <div class="timeline-v-event font-inter">${t.event}</div>
-                `;
-                firmTimelineList.appendChild(item);
-            });
-        } else {
-            firmTimelineList.innerHTML = '<p class="text-muted">No chronological dossier timeline detected.</p>';
+        if (firmTimelineList) {
+            firmTimelineList.innerHTML = '';
+            if (data.timeline && data.timeline.length > 0) {
+                data.timeline.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-v-item';
+                    item.innerHTML = `
+                        <div class="timeline-v-node"></div>
+                        <div class="timeline-v-date font-outfit">${t.date}</div>
+                        <div class="timeline-v-event font-inter">${t.event}</div>
+                    `;
+                    firmTimelineList.appendChild(item);
+                });
+            } else {
+                firmTimelineList.innerHTML = '<p class="text-muted">No chronological dossier timeline detected.</p>';
+            }
         }
 
         // Statutes
-        firmStatuteStack.innerHTML = '';
-        if (data.statutes && data.statutes.length > 0) {
-            data.statutes.forEach(s => {
-                const card = document.createElement('div');
-                card.className = 'statute-pill-card';
-                card.innerHTML = `
-                    <div class="statute-pill-header">
-                        <span class="statute-pill-num text-accent">Sec ${s.section_number}</span>
-                        <span class="statute-pill-act">${s.code_type}</span>
-                    </div>
-                    <div class="statute-pill-title font-outfit">${s.section_title}</div>
-                    ${s.procedural_route ? `<div class="statute-pill-route" style="border:none;margin:0;padding:0;"><strong>Authority:</strong> ${s.procedural_route}</div>` : ''}
-                `;
-                firmStatuteStack.appendChild(card);
-            });
-        } else {
-            firmStatuteStack.innerHTML = '<p class="text-muted">No matched statutes compiled.</p>';
+        if (firmStatuteStack) {
+            firmStatuteStack.innerHTML = '';
+            if (data.statutes && data.statutes.length > 0) {
+                data.statutes.forEach(s => {
+                    const card = document.createElement('div');
+                    card.className = 'statute-pill-card';
+                    card.style.cursor = 'pointer';
+                    card.innerHTML = `
+                        <div class="statute-pill-header">
+                            <span class="statute-pill-num text-accent">Sec ${s.section_number}</span>
+                            <span class="statute-pill-act">${s.code_type}</span>
+                        </div>
+                        <div class="statute-pill-title font-outfit">${s.section_title}</div>
+                        ${s.procedural_route ? `<div class="statute-pill-route" style="border:none;margin:0;padding:0;"><strong>Authority:</strong> ${s.procedural_route}</div>` : ''}
+                    `;
+                    card.addEventListener('click', () => openStatuteModal(s));
+                    firmStatuteStack.appendChild(card);
+                });
+            } else {
+                firmStatuteStack.innerHTML = '<p class="text-muted">No matched statutes compiled.</p>';
+            }
         }
 
         // Strategy Report
-        firmStrategyBrief.innerText = data.strategy_report || "Litigation opponent strategy report skipped.";
+        if (firmStrategyBrief) firmStrategyBrief.innerText = data.strategy_report || "Litigation opponent strategy report skipped.";
 
         // Verdict Order
-        firmVerdictText.innerText = data.judge_verdict || "Magistrate verdict skipped.";
+        if (firmVerdictText) firmVerdictText.innerText = data.judge_verdict || "Magistrate verdict skipped.";
 
         // Evidence Audit
-        firmEvidenceAudit.innerHTML = '';
-        if (data.evidence && data.evidence.length > 0) {
-            data.evidence.forEach(e => {
-                const card = document.createElement('div');
-                card.className = 'audit-card';
-                let ratingClass = e.support_rating?.toLowerCase() || 'medium';
-                card.innerHTML = `
-                    <span class="audit-card-title">${e.filename}</span>
-                    <span class="evidence-rating-pill ${ratingClass}">${e.support_rating}</span>
-                `;
-                firmEvidenceAudit.appendChild(card);
-            });
-        } else {
-            firmEvidenceAudit.innerHTML = '<p class="evidence-list-empty">No analyzed items found in the legal dossier.</p>';
+        if (firmEvidenceAudit) {
+            firmEvidenceAudit.innerHTML = '';
+            if (data.evidence && data.evidence.length > 0) {
+                data.evidence.forEach(e => {
+                    const card = document.createElement('div');
+                    card.className = 'audit-card';
+                    let ratingClass = e.support_rating?.toLowerCase() || 'medium';
+                    card.innerHTML = `
+                        <span class="audit-card-title">${e.filename}</span>
+                        <span class="evidence-rating-pill ${ratingClass}">${e.support_rating}</span>
+                    `;
+                    firmEvidenceAudit.appendChild(card);
+                });
+            } else {
+                firmEvidenceAudit.innerHTML = '<p class="evidence-list-empty">No analyzed items found in the legal dossier.</p>';
+            }
         }
 
         // Safety Checklist
-        firmSafetyFlags.innerHTML = '';
-        if (data.flags && data.flags.length > 0) {
-            data.flags.forEach(f => {
-                const card = document.createElement('div');
-                const isHigh = f.severity === 'High';
-                card.className = `safety-flag-card ${isHigh ? 'high' : ''}`;
-                card.innerHTML = `
-                    <div class="safety-flag-title font-outfit">${f.flag_title}</div>
-                    <div class="safety-flag-msg font-inter">${f.message}</div>
-                `;
-                firmSafetyFlags.appendChild(card);
-            });
-        } else {
-            firmSafetyFlags.innerHTML = '<p class="text-muted">Admissibility check passed. Standard filing routes approved.</p>';
+        if (firmSafetyFlags) {
+            firmSafetyFlags.innerHTML = '';
+            if (data.flags && data.flags.length > 0) {
+                data.flags.forEach(f => {
+                    const card = document.createElement('div');
+                    const isHigh = f.severity === 'High';
+                    card.className = `safety-flag-card ${isHigh ? 'high' : ''}`;
+                    card.innerHTML = `
+                        <div class="safety-flag-title font-outfit">${f.flag_title}</div>
+                        <div class="safety-flag-msg font-inter">${f.message}</div>
+                    `;
+                    firmSafetyFlags.appendChild(card);
+                });
+            } else {
+                firmSafetyFlags.innerHTML = '<p class="text-muted">Admissibility check passed. Standard filing routes approved.</p>';
+            }
         }
 
         // Full Case Brief pre-filing docket
-        firmBriefText.innerText = data.case_brief || "Pre-filing brief skipped.";
+        if (firmBriefText) firmBriefText.innerText = data.case_brief || "Pre-filing brief skipped.";
+
+        // Render statutory cognitive interpretations & landmark precedents
+        renderInterpretations(firmInterpretationsList, data.interpretations);
+        renderPrecedents(firmPrecedentsList, data.precedents);
     }
 
     function animateRadialGauge(targetPercent) {
@@ -902,22 +1441,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(interval);
             } else {
                 current++;
-                gaugeProbabilityNum.innerText = `${current}%`;
+                if (gaugeProbabilityNum) gaugeProbabilityNum.innerText = `${current}%`;
                 
                 // Offset calculates how much transparent space we leave
                 const offset = circumference - (current / 100) * circumference;
-                gaugeFillCircle.style.strokeDashoffset = offset;
-                
-                // Color matching depending on strength
-                if (current < 40) {
-                    gaugeFillCircle.style.stroke = 'var(--color-danger)';
-                } else if (current < 70) {
-                    gaugeFillCircle.style.stroke = 'var(--color-warning)';
-                } else {
-                    gaugeFillCircle.style.stroke = 'var(--color-success)';
+                if (gaugeFillCircle) {
+                    gaugeFillCircle.style.strokeDashoffset = offset;
+                    
+                    // Color matching depending on strength
+                    if (current < 40) {
+                        gaugeFillCircle.style.stroke = 'var(--color-danger)';
+                    } else if (current < 70) {
+                        gaugeFillCircle.style.stroke = 'var(--color-warning)';
+                    } else {
+                        gaugeFillCircle.style.stroke = 'var(--color-success)';
+                    }
                 }
             }
         }, 15);
+    }
+
+    function openStatuteModal(s) {
+        if (!s) return;
+        document.getElementById('statute-modal-code').innerText = s.code_type || 'Statute';
+        document.getElementById('statute-modal-act-title').innerText = s.act_title || '';
+        document.getElementById('statute-modal-section-header').innerText = `Section ${s.section_number}: ${s.section_title}`;
+        
+        document.getElementById('statute-modal-description').innerText = s.description || 'No description available.';
+        
+        const punishGroup = document.getElementById('group-modal-punishment');
+        const punishText = document.getElementById('statute-modal-punishment');
+        if (s.punishment) {
+            punishGroup.style.display = 'block';
+            punishText.innerText = s.punishment;
+        } else {
+            punishGroup.style.display = 'none';
+        }
+
+        const routeGroup = document.getElementById('group-modal-route');
+        const routeText = document.getElementById('statute-modal-route');
+        if (s.procedural_route || s.evidence_rule) {
+            routeGroup.style.display = 'block';
+            routeGroup.querySelector('.form-label').innerText = s.evidence_rule ? 'Evidence Rule / Principle' : 'Procedural Route';
+            routeText.innerText = s.procedural_route || s.evidence_rule;
+        } else {
+            routeGroup.style.display = 'none';
+        }
+
+        const evidenceGroup = document.getElementById('group-modal-evidence-required');
+        const evidenceList = document.getElementById('statute-modal-evidence-list');
+        evidenceList.innerHTML = '';
+        if (s.evidence_required && s.evidence_required.length > 0) {
+            evidenceGroup.style.display = 'block';
+            s.evidence_required.forEach(item => {
+                const li = document.createElement('li');
+                li.innerText = item;
+                evidenceList.appendChild(li);
+            });
+        } else {
+            evidenceGroup.style.display = 'none';
+        }
+        
+        modalStatute.classList.add('show');
     }
 
     // ---------------------------------------------------------
@@ -925,7 +1510,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     async function fetchPastCases() {
         try {
-            const res = await fetch(`${API_BASE}/api/cases`);
+            let url = `${API_BASE}/api/cases`;
+            if (state.userSession && state.userSession.id) {
+                url += `?user_id=${state.userSession.id}&user_type=${state.userSession.user_type}`;
+            }
+            const res = await fetch(url);
             if (!res.ok) throw new Error("Failed to load historical case submissions list.");
             const cases = await res.json();
             
@@ -938,13 +1527,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderCaseHistoryList() {
-        if (state.pastCases.length === 0) {
+        // Filter cases to match the logged-in persona/user_type to prevent carrying the same cases
+        let filteredCases = state.pastCases;
+        if (state.userSession) {
+            const expectedPersona = state.userSession.user_type === 'lawfirm' ? 'lawfirm' : 'individual';
+            filteredCases = state.pastCases.filter(c => c.user_persona === expectedPersona);
+        }
+
+        if (filteredCases.length === 0) {
             caseHistoryList.innerHTML = '<li class="history-placeholder">No analysis records found.</li>';
             return;
         }
 
         caseHistoryList.innerHTML = '';
-        state.pastCases.forEach(c => {
+        filteredCases.forEach(c => {
             const date = new Date(c.created_at);
             const dateStr = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
             const snippet = c.grievance_snippet || `Case ID: ${c.id}`;
@@ -1009,9 +1605,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         if (state.activeCaseId === id) {
                             startNewCaseFlow();
-                        } else {
-                            fetchPastCases();
                         }
+                        fetchPastCases();
                     } catch (err) {
                         alert(err.message);
                     }
@@ -1032,6 +1627,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderAttachedFilesList();
         switchView('intake');
+
+        // Reset Law Firm sub-tabs to default (Acquire Case)
+        if (state.userSession && state.userSession.user_type === 'lawfirm') {
+            btnTabAcquireDocket.classList.add('active');
+            btnTabDirectCase.classList.remove('active');
+            
+            btnTabAcquireDocket.style.background = 'var(--color-primary)';
+            btnTabAcquireDocket.style.color = 'var(--bg-panel)';
+            btnTabDirectCase.style.background = 'transparent';
+            btnTabDirectCase.style.color = 'var(--color-foreground)';
+            
+            cardAcquireDocket.style.display = 'block';
+            citizenIntakeWorkspace.style.display = 'none';
+            state.activePersona = 'lawfirm';
+        }
         
         // Remove active class highlights in sidebar
         const items = document.querySelectorAll('.case-history-item');

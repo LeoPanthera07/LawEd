@@ -137,6 +137,18 @@
         "Proof of act causing obstruction or annoyance (photographs, neighborhood statements).",
         "Impact on public space or local residents."
       ]
+    },
+    {
+      "section_number": "281",
+      "section_title": "Rash Driving or Riding on a Public Way",
+      "act_title": "Bharatiya Nyaya Sanhita, 2023",
+      "description": "Whoever drives any vehicle, or rides, on any public way in a manner so rash or negligent as to endanger human life, or to be likely to cause hurt or injury to any other person.",
+      "punishment": "Imprisonment of either description for a term which may extend to six months, or with fine which may extend to ten thousand rupees, or with both.",
+      "evidence_required": [
+        "Proof that the accused was driving/riding the vehicle on a public way.",
+        "Proof that the driving/riding was rash or negligent.",
+        "Proof that such driving/riding endangered human life or was likely to cause hurt/injury."
+      ]
     }
   ],
   "BNSS": [
@@ -183,6 +195,34 @@
       "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
       "description": "The burden of proof as to any particular fact lies on that person who wishes the Court to believe in its existence, unless it is provided by any law that the proof of that fact shall lie on any particular person.",
       "evidence_rule": "The complainant holds the initial burden to establish their claim with admissible proof."
+    },
+    {
+      "section_number": "9",
+      "section_title": "Facts Not Otherwise Relevant Become Relevant (Alibi / Inconsistency)",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Facts not otherwise relevant are relevant: (1) if they are inconsistent with any fact in issue or relevant fact; (2) if by themselves or in connection with other facts they make the existence or non-existence of any fact in issue or relevant fact highly improbable or probable.",
+      "evidence_rule": "Allows proof of facts showing a plea of alibi (being elsewhere) or inconsistency to render the alleged facts highly improbable."
+    },
+    {
+      "section_number": "11",
+      "section_title": "Facts Relevant When Right or Custom is in Question",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Where the question is as to the existence of any right or custom, the following facts are relevant: (a) any transaction by which the right or custom in question was created, claimed, modified, recognised, asserted or denied, or which was inconsistent with its existence; (b) particular instances in which the right or custom was claimed, recognised or exercised, or in which its exercise was disputed, asserted or departed from.",
+      "evidence_rule": "Governs the admissibility of transactions or instances asserting or denying a custom or right."
+    },
+    {
+      "section_number": "6",
+      "section_title": "Motive, Preparation and Previous or Subsequent Conduct",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Any fact is relevant which shows or constitutes a motive or preparation for any fact in issue or relevant fact. The conduct of any party, or of any agent to any party, to any suit or proceeding, in reference to such suit or proceeding, or in reference to any fact in issue therein or relevant thereto, and the conduct of any person an offence against whom is the subject of any proceeding, is relevant, if such conduct influences or is influenced by any fact in issue or relevant fact, and whether it was previous or subsequent thereto.",
+      "evidence_rule": "Governs the relevancy of motive, preparation, and subsequent conduct (such as absconding or hiding evidence) in legal proceedings."
+    },
+    {
+      "section_number": "7",
+      "section_title": "Facts Which are the Occasion, Cause or Effect of Facts in Issue",
+      "act_title": "Bharatiya Sakshya Adhiniyam, 2023",
+      "description": "Facts which are the occasion, cause or effect, immediate or otherwise, of relevant facts, or facts in issue, or which constitute the state of things under which they happened, or which afforded an opportunity for their occurrence or transaction, are relevant.",
+      "evidence_rule": "Governs facts that show the cause, effect, opportunity, or state of things under which an event occurred."
     }
   ]
 }

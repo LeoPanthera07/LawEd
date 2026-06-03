@@ -4,9 +4,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.main import app, get_db
-from backend.database import Base
-from backend.models import CaseSubmission
+from backend.services.courtroom.main import app, get_db
+from backend.services.courtroom.database import Base
+from backend.services.courtroom.models import CaseSubmission
 
 # Create a shared SQLite DB for endpoint testing
 TEST_DB_URL = "sqlite:///test_endpoints.db"
@@ -36,26 +36,27 @@ def client(test_db):
     app.dependency_overrides.clear()
 
 def test_create_case_endpoint(client):
-    # 1. Post request to create case
+    # Post request to create case (runs baseline intake agents)
     response = client.post(
         "/api/cases",
         data={
-            "grievance": "Test grievance online transaction cheating.",
+            "grievance": "Yesterday Suresh cheated me Rs 45,000 on WhatsApp in Mumbai.",
             "location": "Mumbai",
-            "user_persona": "individual"
+            "citizen_id": 10
         }
     )
     assert response.status_code == 200
     res_data = response.json()
     assert res_data["status"] == "success"
     assert res_data["case_id"] is not None
+    assert res_data["unique_id"] is not None
     assert res_data["persona"] == "individual"
 
 def test_upload_evidence_endpoint(client):
     # 1. Create a case
     create_res = client.post(
         "/api/cases",
-        data={"grievance": "Test cheating case.", "location": "Delhi", "user_persona": "individual"}
+        data={"grievance": "Test cheating case.", "location": "Delhi"}
     )
     case_id = create_res.json()["case_id"]
 
@@ -76,8 +77,8 @@ def test_upload_evidence_endpoint(client):
 
 def test_case_list_and_delete_endpoints(client):
     # 1. Create cases
-    client.post("/api/cases", data={"grievance": "Grievance 1", "user_persona": "individual"})
-    client.post("/api/cases", data={"grievance": "Grievance 2", "user_persona": "lawfirm"})
+    client.post("/api/cases", data={"grievance": "Grievance 1", "location": "Delhi"})
+    client.post("/api/cases", data={"grievance": "Grievance 2", "location": "Mumbai"})
 
     # 2. List cases
     list_res = client.get("/api/cases")
@@ -100,23 +101,31 @@ def test_case_list_and_delete_endpoints(client):
     assert target_id not in case_ids2
 
 def test_full_analysis_and_dashboard_retrieval(client):
-    # 1. Create a lawfirm case
+    # 1. Create a case as a citizen (persona: individual)
     create_res = client.post(
         "/api/cases",
         data={
             "grievance": "WhatsApp threat and cheated Rs 50,000 in Mumbai.",
             "location": "Mumbai",
-            "user_persona": "lawfirm"
+            "citizen_id": 5
         }
     )
-    case_id = create_res.json()["case_id"]
+    res_data = create_res.json()
+    case_id = res_data["case_id"]
+    unique_id = res_data["unique_id"]
 
-    # 2. Trigger pipeline analysis (BYOK headers omitted to run in simulated mode)
-    analyze_res = client.post(f"/api/cases/{case_id}/analyze")
-    assert analyze_res.status_code == 200
-    analyze_data = analyze_res.json()
-    assert analyze_data["status"] == "success"
-    assert analyze_data["persona"] == "lawfirm"
+    # 2. Law firm acquires the case using the UNIQUE-ID (triggers adversarial courtroom simulations)
+    acquire_res = client.post(
+        "/api/cases/acquire",
+        json={
+            "unique_id": unique_id,
+            "acquired_by_firm_id": 99
+        }
+    )
+    assert acquire_res.status_code == 200
+    acquire_data = acquire_res.json()
+    assert acquire_data["status"] == "success"
+    assert acquire_data["persona"] == "lawfirm"
 
     # 3. Fetch Case Dashboard parameters
     dash_res = client.get(f"/api/cases/{case_id}/dashboard")
@@ -136,3 +145,15 @@ def test_full_analysis_and_dashboard_retrieval(client):
     # Mapped sections
     section_numbers = [s["section_number"] for s in dash_data["statutes"]]
     assert "318" in section_numbers or "303" in section_numbers
+
+    # Assert new static/dynamic cognitive elements are successfully returned in the payload
+    assert "interpretations" in dash_data
+    assert len(dash_data["interpretations"]) > 0
+    assert dash_data["interpretations"][0]["clause_number"] is not None
+    assert dash_data["interpretations"][0]["legal_opinion"] is not None
+
+    assert "precedents" in dash_data
+    precedents = dash_data["precedents"]
+    assert len(precedents) > 0
+    assert precedents[0]["case_name"] is not None
+    assert precedents[0]["relevance"] is not None

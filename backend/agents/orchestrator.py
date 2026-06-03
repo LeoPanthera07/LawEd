@@ -44,6 +44,14 @@ def orchestrate_case_analysis(db: Session, case_id: int, api_key: str = None, pr
     steps_log.append({"step": "Statutory Mapping (RAG)", "status": "completed", "details": "Mapped substantive and procedural acts under BNS, BSA, and BNSS."})
     time.sleep(0.5)
 
+    # Step 3.5: Legal Interpretation Mapping
+    case.active_step = "interpretation"
+    db.commit()
+    from backend.agents.interpretation_agent import run_interpretation_agent
+    interpret_res = run_interpretation_agent(db, case_id, api_key, provider)
+    steps_log.append({"step": "Statutory Interpretation", "status": "completed", "details": "Matched Complainant facts against specific statutory clauses and sub-clauses."})
+    time.sleep(0.5)
+
     # Step 4: Completeness Review
     case.active_step = "review"
     db.commit()

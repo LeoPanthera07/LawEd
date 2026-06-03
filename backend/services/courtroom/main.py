@@ -1,23 +1,35 @@
 import os
 import shutil
+import uuid
+import json
+from datetime import datetime
 from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-import json
 
-from backend.database import engine, Base, get_db
-from backend.models import CaseSubmission, EvidenceItem, FactExtraction, LegalReference, CourtDebateLog, CaseDraft, ReviewFlag, LegalInterpretation, PrecedentMatch
-from backend.agents.orchestrator import orchestrate_case_analysis
+from backend.services.courtroom.database import engine, Base, get_db
+from backend.services.courtroom.models import CaseSubmission, EvidenceItem, FactExtraction, LegalReference, CourtDebateLog, CaseDraft, ReviewFlag, LegalInterpretation, PrecedentMatch
 
-# Initialize FastAPI application
+# Import the agents (they use local orchestrator steps)
+from backend.agents.intake_agent import run_intake_agent
+from backend.agents.evidence_agent import run_evidence_agent
+from backend.agents.legal_agent import run_legal_agent
+from backend.agents.review_agent import run_review_agent
+from backend.agents.drafting_agent import run_drafting_agent
+from backend.agents.plaintiff_agent import run_plaintiff_agent
+from backend.agents.defense_agent import run_defense_agent
+from backend.agents.judge_agent import run_judge_agent
+from backend.agents.interpretation_agent import run_interpretation_agent
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
-    title="LawEdAI Serving Gateway",
-    description="Intelligent pre-filing legal case builder and court simulation API."
+    title="LawEdAI Courtroom & Case Simulation Service",
+    description="Microservice coordinating case submissions, UNIQUE-ID lookups, and multi-agent simulations."
 )
 
-# Enable CORS for local development and integration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,37 +38,66 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
-# Define directories
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 UPLOAD_DIR = os.path.join(BASE_DIR, "data", "uploads")
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# ---------------------------------------------------------
-# REST API Endpoints
-# ---------------------------------------------------------
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/api/cases")
 def create_case(
     grievance: str = Form(...),
     location: Optional[str] = Form(None),
-    user_persona: str = Form("individual"),
+    citizen_id: Optional[int] = Form(None),
+    acquired_by_firm_id: Optional[int] = Form(None),
     db: Session = Depends(get_db)
 ):
-    """Creates a new case submission with a specific persona (individual or lawfirm)."""
+    """Creates a new case, generates a UNIQUE-ID, and runs baseline analysis or full courtroom simulation."""
+    unique_id = f"LAWED-{datetime.now().year}-{str(uuid.uuid4())[:8].upper()}"
+    
+    is_firm = acquired_by_firm_id is not None
+    persona = "lawfirm" if is_firm else "individual"
+    step = "courtroom_debate" if is_firm else "intake"
+    
     case = CaseSubmission(
         grievance=grievance,
         location=location,
-        user_persona=user_persona,
-        active_step="intake"
+        citizen_id=citizen_id,
+        acquired_by_firm_id=acquired_by_firm_id,
+        unique_id=unique_id,
+        user_persona=persona,
+        active_step=step
     )
     db.add(case)
     db.commit()
     db.refresh(case)
-    return {"status": "success", "case_id": case.id, "persona": case.user_persona}
+
+    # Trigger Baseline Pipeline
+    try:
+        run_intake_agent(db, case.id)
+        run_evidence_agent(db, case.id)
+        run_legal_agent(db, case.id)
+        run_interpretation_agent(db, case.id)
+        run_drafting_agent(db, case.id)
+        
+        if is_firm:
+            # Trigger Adjudication Courtroom Simulation Pipeline for Law Firms
+            run_review_agent(db, case.id)
+            run_plaintiff_agent(db, case.id)
+            run_defense_agent(db, case.id)
+            run_judge_agent(db, case.id)
+        else:
+            run_judge_agent(db, case.id) # Calculates baseline case strength win probability
+            
+        case.active_step = "completed"
+        db.commit()
+    except Exception as e:
+        print(f"Error executing case pipeline: {e}")
+
+    return {
+        "status": "success",
+        "case_id": case.id,
+        "unique_id": case.unique_id,
+        "persona": case.user_persona
+    }
 
 @app.post("/api/cases/{case_id}/evidence")
 def upload_evidence(
@@ -64,14 +105,13 @@ def upload_evidence(
     files: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    """Uploads multiple evidence files and saves them to local storage."""
+    """Uploads evidence items for a specific case dockets folder."""
     case = db.query(CaseSubmission).filter(CaseSubmission.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
 
     case_upload_dir = os.path.join(UPLOAD_DIR, str(case_id))
-    if not os.path.exists(case_upload_dir):
-        os.makedirs(case_upload_dir, exist_ok=True)
+    os.makedirs(case_upload_dir, exist_ok=True)
 
     evidence_list = []
     for file in files:
@@ -79,13 +119,12 @@ def upload_evidence(
         with open(file_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
 
-        # Create evidence db entry
         evidence = EvidenceItem(
             case_id=case_id,
             filename=file.filename,
             file_type=file.content_type or "application/octet-stream",
             file_path=file_path,
-            support_rating="Medium"  # Default, rated in analysis agent
+            support_rating="Medium"
         )
         db.add(evidence)
         db.commit()
@@ -97,39 +136,56 @@ def upload_evidence(
             "file_type": evidence.file_type
         })
 
+    # Recalculate baseline evidence ratings
+    try:
+        run_evidence_agent(db, case_id)
+        run_judge_agent(db, case_id)
+    except Exception as e:
+        print(f"Error updating evidence ratings: {e}")
+
     return {"status": "success", "uploaded_evidence": evidence_list}
 
-@app.post("/api/cases/{case_id}/analyze")
-def analyze_case(
-    case_id: int,
-    x_groq_api_key: Optional[str] = Header(None),
-    x_openai_api_key: Optional[str] = Header(None),
-    db: Session = Depends(get_db)
-):
-    """Triggers the orchestrator sequence, executing agents. Supports BYOK headers."""
-    case = db.query(CaseSubmission).filter(CaseSubmission.id == case_id).first()
+@app.post("/api/cases/acquire")
+def acquire_case(payload: dict, db: Session = Depends(get_db)):
+    """Law Firm Case Acquisition: Matches UNIQUE-ID and triggers adversarial courtroom simulations."""
+    unique_id = payload.get("unique_id", "").strip().upper()
+    firm_id = payload.get("acquired_by_firm_id")
+
+    if not unique_id or not firm_id:
+        raise HTTPException(status_code=400, detail="Missing UNIQUE-ID or firm ID.")
+
+    case = db.query(CaseSubmission).filter(CaseSubmission.unique_id == unique_id).first()
     if not case:
-        raise HTTPException(status_code=404, detail="Case not found.")
+        raise HTTPException(status_code=404, detail="Grievance dossier with this UNIQUE-ID not found.")
 
-    # Determine LLM configuration if provided
-    api_key = None
-    provider = "groq"
-    if x_groq_api_key:
-        api_key = x_groq_api_key
-        provider = "groq"
-    elif x_openai_api_key:
-        api_key = x_openai_api_key
-        provider = "openai"
+    # Mark as acquired and switch persona
+    case.acquired_by_firm_id = firm_id
+    case.user_persona = "lawfirm"
+    case.active_step = "courtroom_debate"
+    db.commit()
 
+    # Trigger Phase 2 Law Firm Pipeline: Simulated Courtroom Battle
     try:
-        results = orchestrate_case_analysis(db, case_id, api_key, provider)
-        return results
+        run_review_agent(db, case.id)
+        run_plaintiff_agent(db, case.id)
+        run_defense_agent(db, case.id)
+        run_judge_agent(db, case.id) # Adjudicates courtroom battle and provides litigation briefs
+        
+        case.active_step = "completed"
+        db.commit()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error executing Adjudication pipeline: {e}")
+
+    return {
+        "status": "success",
+        "case_id": case.id,
+        "unique_id": case.unique_id,
+        "persona": case.user_persona
+    }
 
 @app.get("/api/cases/{case_id}/dashboard")
-def get_case_dashboard(case_id: int, db: Session = Depends(get_db)):
-    """Fetches full processed legal dashboard parameters for a case submission."""
+def get_dashboard(case_id: int, db: Session = Depends(get_db)):
+    """Fetches full processed legal dashboard parameters for a case dockets view."""
     case = db.query(CaseSubmission).filter(CaseSubmission.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
@@ -138,17 +194,15 @@ def get_case_dashboard(case_id: int, db: Session = Depends(get_db)):
     legal_refs = db.query(LegalReference).filter(LegalReference.case_id == case_id).all()
     evidence = db.query(EvidenceItem).filter(EvidenceItem.case_id == case_id).all()
     flags = db.query(ReviewFlag).filter(ReviewFlag.case_id == case_id).all()
-    
-    # Retrieve drafts
     brief_draft = db.query(CaseDraft).filter(CaseDraft.case_id == case_id, CaseDraft.draft_type == "brief").first()
     strategy_draft = db.query(CaseDraft).filter(CaseDraft.case_id == case_id, CaseDraft.draft_type == "strategy_report").first()
-
-    # Retrieve interpretations and past Supreme Court precedents
     interpretations = db.query(LegalInterpretation).filter(LegalInterpretation.case_id == case_id).all()
     precedents = db.query(PrecedentMatch).filter(PrecedentMatch.case_id == case_id).all()
+    debate_logs = db.query(CourtDebateLog).filter(CourtDebateLog.case_id == case_id).order_by(CourtDebateLog.argument_index).all()
 
-    dashboard = {
+    return {
         "case_id": case.id,
+        "unique_id": case.unique_id,
         "grievance": case.grievance,
         "location": case.location,
         "created_at": case.created_at.strftime("%Y-%m-%d %H:%M:%S"),
@@ -212,13 +266,7 @@ def get_case_dashboard(case_id: int, db: Session = Depends(get_db)):
         ],
         "case_brief": brief_draft.content if brief_draft else None,
         "strategy_report": strategy_draft.content if strategy_draft else None,
-        "debate_logs": []
-    }
-
-    # If law firm, retrieve courtroom logs
-    if case.user_persona == "lawfirm":
-        debate_logs = db.query(CourtDebateLog).filter(CourtDebateLog.case_id == case_id).order_by(CourtDebateLog.argument_index).all()
-        dashboard["debate_logs"] = [
+        "debate_logs": [
             {
                 "speaker": log.speaker,
                 "text": log.text,
@@ -226,12 +274,11 @@ def get_case_dashboard(case_id: int, db: Session = Depends(get_db)):
             }
             for log in debate_logs
         ]
-
-    return dashboard
+    }
 
 @app.get("/api/cases")
 def list_cases(user_id: Optional[int] = None, user_type: Optional[str] = None, db: Session = Depends(get_db)):
-    """Lists past case history for the sidebar navigator filtered by role (RBAC)."""
+    """Lists cases filtered by role and user ID (RBAC)."""
     query = db.query(CaseSubmission)
     if user_type == "citizen" and user_id:
         query = query.filter(CaseSubmission.citizen_id == user_id)
@@ -254,29 +301,15 @@ def list_cases(user_id: Optional[int] = None, user_type: Optional[str] = None, d
 
 @app.delete("/api/cases/{case_id}")
 def delete_case(case_id: int, db: Session = Depends(get_db)):
-    """Deletes a specific case and any uploaded file directories."""
+    """Deletes a specific case submission dockets folder."""
     case = db.query(CaseSubmission).filter(CaseSubmission.id == case_id).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
 
-    # Remove physical upload files
     case_upload_dir = os.path.join(UPLOAD_DIR, str(case_id))
     if os.path.exists(case_upload_dir):
         shutil.rmtree(case_upload_dir)
 
     db.delete(case)
     db.commit()
-    return {"status": "success", "message": f"Case {case_id} deleted successfully."}
-
-# ---------------------------------------------------------
-# Static File Mounting
-# ---------------------------------------------------------
-# Create frontend directory structures if missing (index.html, index.css, app.js)
-FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
-if not os.path.exists(FRONTEND_DIR):
-    os.makedirs(FRONTEND_DIR, exist_ok=True)
-    os.makedirs(os.path.join(FRONTEND_DIR, "assets", "styles"), exist_ok=True)
-    os.makedirs(os.path.join(FRONTEND_DIR, "assets", "js"), exist_ok=True)
-
-# Mount static files at root
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+    return {"status": "success", "message": f"Case {case_id} deleted."}

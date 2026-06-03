@@ -2,12 +2,13 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from backend.database import Base
-from backend.models import CaseSubmission, FactExtraction, LegalReference, EvidenceItem, CourtDebateLog, CaseDraft
+from backend.models import CaseSubmission, FactExtraction, LegalReference, EvidenceItem, CourtDebateLog, CaseDraft, LegalInterpretation, PrecedentMatch
 from backend.agents.intake_agent import run_intake_agent
 from backend.agents.evidence_agent import run_evidence_agent
 from backend.agents.legal_agent import run_legal_agent
 from backend.agents.review_agent import run_review_agent
 from backend.agents.drafting_agent import run_drafting_agent
+from backend.agents.interpretation_agent import run_interpretation_agent
 from backend.agents.orchestrator import orchestrate_case_analysis
 
 # Setup in-memory SQLite database for testing
@@ -192,4 +193,36 @@ def test_individual_win_probability_orchestration(db_session):
     assert facts_entry is not None
     assert "Suresh" in facts_entry.parties_json
     assert "Rs. 45,000" in facts_entry.harm
+
+def test_interpretation_and_precedent_storage(db_session):
+    # 1. Create a test case
+    case = CaseSubmission(
+        grievance="I transferred Rs. 45,000 to Suresh on WhatsApp, but they cheated me.",
+        location="Delhi",
+        user_persona="individual"
+    )
+    db_session.add(case)
+    db_session.commit()
+    db_session.refresh(case)
+
+    # Run intake and statutory mapping
+    run_intake_agent(db_session, case.id)
+    run_legal_agent(db_session, case.id)
+    
+    # Run the new interpretation agent
+    interpret_res = run_interpretation_agent(db_session, case.id)
+    assert interpret_res["status"] == "success"
+    assert interpret_res["mapped_count"] > 0
+
+    # Assert database entries are written
+    interpretations = db_session.query(LegalInterpretation).filter(LegalInterpretation.case_id == case.id).all()
+    assert len(interpretations) > 0
+    assert interpretations[0].clause_number is not None
+    assert interpretations[0].legal_opinion is not None
+
+    precedents = db_session.query(PrecedentMatch).filter(PrecedentMatch.case_id == case.id).all()
+    assert len(precedents) > 0
+    assert precedents[0].case_name is not None
+    assert precedents[0].relevance is not None
+
 

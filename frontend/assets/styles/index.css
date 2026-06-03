@@ -1,162 +1,261 @@
 /* ==========================================================================
-   LawEdAI Premium Theme Styles (Vanilla CSS Design System)
+   LawEdAI — Elite Light-Mode Serif Style Sheet (Luxurious & Posh)
    ========================================================================== */
 
-/* ---------------------------------------------------------
-   CSS Variables & Design Tokens
-   --------------------------------------------------------- */
+/* Design Tokens & Theme Variables */
 :root {
-    --bg-base: #0a0a0f;
-    --bg-mesh-1: radial-gradient(circle at 10% 20%, rgba(31, 23, 54, 0.4) 0%, transparent 50%);
-    --bg-mesh-2: radial-gradient(circle at 90% 80%, rgba(18, 29, 61, 0.45) 0%, transparent 50%);
-    --bg-panel: rgba(22, 22, 33, 0.65);
-    --border-glow: rgba(255, 255, 255, 0.08);
+    /* Color Palette - Luxury Black, Ivory, and Gold */
+    --bg-base: #fdfdfa;          /* Clean ivory linen background */
+    --bg-panel: #ffffff;         /* Pure white clean cards */
+    --bg-accent: #f6f5ef;        /* Warm paper grey for sidebars/panels */
+    --bg-gold-soft: #fcf9f2;     /* Warm gold-tinted paper backdrop */
     
-    /* harmonies */
-    --color-primary: #8a70ff;
-    --color-primary-rgb: 138, 112, 255;
-    --color-accent: #e5b358;
-    --color-accent-rgb: 229, 179, 88;
-    --color-success: #10b981;
-    --color-danger: #ef4444;
-    --color-warning: #f59e0b;
-    --color-info: #06b6d4;
-
-    /* Neutrals */
-    --text-main: #f3f4f6;
-    --text-muted: #9ca3af;
-    --text-dark: #1f2937;
+    --color-primary: #111111;    /* Deep solid charcoal/black */
+    --color-secondary: #4a4a4a;  /* Muted slate for body text */
+    --color-accent: #a99260;     /* Warm antique gold / muted brass */
+    --color-accent-light: #ebdcb9; /* Pale gold highlight */
+    --color-border: #e6e3d8;     /* Fine linen border rule */
+    --color-border-dark: #222222;/* Sharp charcoal border */
     
-    /* UI Sizing */
-    --sidebar-width: 280px;
-    --border-radius-lg: 16px;
-    --border-radius-md: 10px;
-    --border-radius-sm: 6px;
-    --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Semantic Status Highlights */
+    --color-success: #1e3a8a;    /* Royal Navy Blue for success */
+    --color-warning: #9a3412;    /* Dark ochre / rust for warnings */
+    --color-danger: #7f1d1d;     /* Deep crimson for critical legal risks */
+    
+    /* Typography */
+    --font-title: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-body: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'Courier New', Courier, monospace;
+    
+    /* Layout Variables */
+    --sidebar-width: 320px;
+    --border-radius-sm: 4px;
+    --border-radius-md: 6px;
+    --border-radius-lg: 10px;
+    --transition-posh: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* ---------------------------------------------------------
-   Reset & Base Styles
-   --------------------------------------------------------- */
+/* Base resets & typography */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) var(--bg-accent);
 }
 
 body {
     background-color: var(--bg-base);
-    background-image: var(--bg-mesh-1), var(--bg-mesh-2);
-    background-attachment: fixed;
-    color: var(--text-main);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.5;
+    color: var(--color-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
 }
 
-.font-inter { font-family: 'Inter', sans-serif; }
-.font-outfit { font-family: 'Outfit', sans-serif; }
+h1, h2, h3, h4, h5, h6, .font-title {
+    font-family: var(--font-title);
+    font-weight: 600;
+    color: var(--color-primary);
+    letter-spacing: -0.3px;
+    line-height: 1.25;
+}
 
-/* ---------------------------------------------------------
-   Custom Scrollbar
-   --------------------------------------------------------- */
-.scroll-styled::-webkit-scrollbar {
+strong, b {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: var(--transition-posh);
+}
+
+a:hover {
+    color: var(--color-primary);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
-.scroll-styled::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+::-webkit-scrollbar-track {
+    background: var(--bg-accent);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
     border-radius: var(--border-radius-sm);
 }
-.scroll-styled::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: var(--border-radius-sm);
-}
-.scroll-styled::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
 }
 
 /* ---------------------------------------------------------
-   App Grid Layout
+   Application Layout Scaffolding
    --------------------------------------------------------- */
 .app-layout {
     display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
-    min-height: 100vh;
+    grid-template-columns: auto 1fr;
     height: 100vh;
+    width: 100vw;
     overflow: hidden;
 }
 
-/* ---------------------------------------------------------
-   Sidebar Component
-   --------------------------------------------------------- */
+/* Sidebar Navigation */
 .app-sidebar {
-    background: rgba(14, 14, 22, 0.85);
-    border-right: 1px solid var(--border-glow);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+    width: var(--sidebar-width);
+    background-color: var(--bg-accent);
+    border-right: 1px solid var(--color-border);
+    padding: 40px 24px;
     display: flex;
     flex-direction: column;
-    padding: 24px 16px;
     height: 100%;
-    z-index: 10;
+    overflow-y: auto;
+    min-width: 0;
+    transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 .sidebar-header {
-    margin-bottom: 24px;
-    padding: 0 8px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 24px;
 }
 
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 6px;
 }
 
 .logo-icon {
     color: var(--color-primary);
-    filter: drop-shadow(0 0 8px rgba(138, 112, 255, 0.4));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
 }
 
 .logo-text {
-    font-family: 'Outfit', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
+    font-family: var(--font-title);
+    font-size: 24px;
+    font-weight: 700;
     letter-spacing: -0.5px;
+    color: var(--color-primary);
 }
 
 .text-accent {
     color: var(--color-accent);
-}
-
-.logo-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-top: 4px;
+    font-family: var(--font-title);
+    font-style: italic;
     font-weight: 500;
 }
 
-.new-case-btn-area {
-    margin-bottom: 28px;
+.logo-sub {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-secondary);
+    font-weight: 700;
 }
 
-.sidebar-nav-label {
-    font-size: 11px;
+.new-case-btn-area {
+    margin-bottom: 32px;
+}
+
+/* Premium Button Overrides */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--text-muted);
-    font-weight: 600;
-    margin-bottom: 12px;
-    padding-left: 8px;
+    padding: 14px 24px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition-posh);
+    width: 100%;
+    border: 1px solid var(--color-primary);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #333333;
+    border-color: #333333;
+    transform: translateY(-1px);
+}
+
+.btn-accent {
+    background-color: var(--color-accent);
+    color: #ffffff;
+    border-color: var(--color-accent);
+}
+
+.btn-accent:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-border-dark);
+}
+
+.btn-outline:hover {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.btn-dark {
+    background-color: transparent;
+    color: var(--color-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.btn-dark:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-block {
+    display: flex;
+    width: 100%;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 10px;
+}
+
+/* Historical Case Lists */
+.sidebar-nav-label {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-secondary);
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .sidebar-history-container {
     flex: 1;
     overflow-y: auto;
-    margin-bottom: 16px;
+    margin-bottom: 32px;
 }
 
 .case-history-list {
@@ -166,276 +265,250 @@ body {
     gap: 8px;
 }
 
-.history-placeholder {
-    font-size: 13px;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 24px 8px;
-    border: 1px dashed rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-md);
-}
-
 .case-history-item {
-    padding: 12px 14px;
-    border-radius: var(--border-radius-md);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border);
+    padding: 16px;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: var(--transition-smooth);
-    position: relative;
-    overflow: hidden;
+    transition: var(--transition-posh);
 }
 
-.case-history-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(138, 112, 255, 0.25);
-    transform: translateY(-1px);
-}
-
-.case-history-item.active {
-    background: rgba(138, 112, 255, 0.1);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(138, 112, 255, 0.15);
+.case-history-item:hover, .case-history-item.active {
+    border-color: var(--color-accent);
+    background-color: var(--bg-gold-soft);
+    box-shadow: 0 4px 12px rgba(169, 146, 96, 0.05);
 }
 
 .history-item-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    color: var(--color-secondary);
     margin-bottom: 6px;
 }
 
 .history-item-title {
-    font-size: 13px;
-    font-weight: 500;
-    white-space: nowrap;
+    font-family: var(--font-title);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 10px;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--text-main);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .history-item-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
-    font-size: 11px;
 }
 
 .persona-tag {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-size: 8px;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 9px;
+    letter-spacing: 0.8px;
+    padding: 2px 6px;
+    border-radius: 2px;
 }
 
 .persona-tag.individual {
-    background: rgba(6, 182, 212, 0.15);
-    color: var(--color-info);
+    background-color: var(--bg-accent);
+    color: var(--color-primary);
 }
 
 .persona-tag.lawfirm {
-    background: rgba(229, 179, 88, 0.15);
-    color: var(--color-accent);
+    background-color: #1e3a8a;
+    color: #ffffff;
 }
 
 .win-badge {
+    font-family: var(--font-sans);
+    font-size: 9px;
     font-weight: 700;
-    color: var(--color-success);
+    text-transform: uppercase;
+    color: var(--color-accent);
 }
 
 .win-badge.nil {
-    color: var(--text-muted);
+    color: var(--color-secondary);
 }
 
 .btn-delete-case {
     background: transparent;
     border: none;
-    color: var(--text-muted);
+    color: var(--color-secondary);
     cursor: pointer;
     padding: 2px;
-    border-radius: 4px;
-    transition: var(--transition-smooth);
-    opacity: 0;
-}
-
-.case-history-item:hover .btn-delete-case {
-    opacity: 1;
+    transition: var(--transition-posh);
 }
 
 .btn-delete-case:hover {
     color: var(--color-danger);
-    background: rgba(239, 68, 68, 0.1);
+}
+
+.history-placeholder {
+    font-size: 12px;
+    color: var(--color-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: 24px 0;
 }
 
 .sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    border-top: 1px solid var(--color-border);
+    padding-top: 24px;
 }
 
 .footer-credit {
-    font-size: 10px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 9px;
+    color: var(--color-secondary);
     text-align: center;
+    margin-top: 12px;
+    letter-spacing: 0.5px;
 }
 
 /* ---------------------------------------------------------
    Workspace Panel Styles
    --------------------------------------------------------- */
 .app-workspace {
+    padding: 48px;
+    overflow-y: auto;
+    background-color: var(--bg-base);
     display: flex;
     flex-direction: column;
-    height: 100%;
-    overflow: hidden;
 }
 
-/* Header Component */
+/* Header Banner */
 .workspace-header {
-    height: 80px;
-    min-height: 80px;
-    background: rgba(14, 14, 22, 0.4);
-    border-bottom: 1px solid var(--border-glow);
-    padding: 0 32px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    backdrop-filter: blur(10px);
+    align-items: flex-end;
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 24px;
 }
 
 .header-branding {
-    display: flex;
-    flex-direction: column;
+    max-width: 50%;
 }
 
 .header-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 20px;
+    font-size: 32px;
     font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
 }
 
 .header-subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-secondary);
+    font-weight: 600;
 }
 
-/* Segmented Persona Selector */
+/* Persona Segmented Controller */
 .persona-selector-container {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
 }
 
 .persona-label-prefix {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-secondary);
+    font-weight: 700;
 }
 
 .persona-segmented-control {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 30px;
-    padding: 4px;
     display: flex;
-    gap: 4px;
+    border: 1px solid var(--color-border-dark);
+    padding: 3px;
+    background-color: var(--bg-panel);
+    border-radius: var(--border-radius-sm);
 }
 
 .segmented-option {
-    cursor: pointer;
-    border-radius: 30px;
-    padding: 6px 16px;
     display: flex;
     align-items: center;
-    transition: var(--transition-smooth);
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 2px;
+    transition: var(--transition-posh);
 }
 
-.segmented-option input[type="radio"] {
+.segmented-option input {
     display: none;
 }
 
-.segmented-option .option-content {
+.option-content {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--color-secondary);
 }
 
-.segmented-option:hover {
-    background: rgba(255, 255, 255, 0.03);
+.option-icon {
+    color: var(--color-secondary);
 }
 
 .segmented-option.active {
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background-color: var(--color-primary);
 }
 
-.segmented-option.active #label-persona-individual ~ input,
 .segmented-option.active .option-content {
-    color: var(--text-main);
-}
-
-body.theme-individual .segmented-option.active {
-    background: var(--color-primary);
-}
-body.theme-individual .segmented-option.active .option-content {
     color: #ffffff;
 }
 
-body.theme-lawfirm .segmented-option.active {
-    background: var(--color-accent);
-}
-body.theme-lawfirm .segmented-option.active .option-content {
-    color: var(--bg-base);
+.segmented-option.active .option-icon {
+    color: #ffffff;
 }
 
 /* ---------------------------------------------------------
-   Workspace View Layouts (Dynamic Swapping)
+   Generic luxurious Card panels
    --------------------------------------------------------- */
-.workspace-view {
-    display: none;
-    flex: 1;
-    overflow-y: auto;
+.card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
     padding: 32px;
+    transition: var(--transition-posh);
     position: relative;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.015);
 }
 
-.workspace-view.active {
-    display: block;
-}
-
-/* ---------------------------------------------------------
-   Premium Components: Glass Card & Buttons
-   --------------------------------------------------------- */
-.glass-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-glow);
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    overflow: hidden;
-    transition: var(--transition-smooth);
-}
-
-.glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+.card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 24px rgba(169, 146, 96, 0.04);
 }
 
 .card-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
 }
 
-.card-header.border-slim {
-    padding: 16px 20px;
+.border-slim {
+    border-bottom: 1px solid var(--color-border);
 }
 
 .card-header-icon-title {
@@ -445,331 +518,239 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .header-icon-circle {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.header-icon-circle.blue {
-    background: rgba(138, 112, 255, 0.15);
+    background-color: var(--bg-accent);
     color: var(--color-primary);
-    box-shadow: 0 0 12px rgba(138, 112, 255, 0.2);
+    border: 1px solid var(--color-border);
 }
 
 .header-icon-circle.gold {
-    background: rgba(229, 179, 88, 0.15);
+    background-color: var(--bg-gold-soft);
     color: var(--color-accent);
-    box-shadow: 0 0 12px rgba(229, 179, 88, 0.2);
+    border-color: var(--color-accent-light);
 }
 
 .card-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .card-subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-.card-body {
-    padding: 24px;
-}
-
-/* Forms & Fields */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: 8px;
+    font-family: var(--font-sans);
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.form-control {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--border-radius-md);
-    color: var(--text-main);
-    padding: 12px 16px;
-    font-size: 14px;
-    outline: none;
-    transition: var(--transition-smooth);
-}
-
-.form-control:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(138, 112, 255, 0.15);
-    background: rgba(0, 0, 0, 0.35);
-}
-
-.text-area-large {
-    min-height: 180px;
-    resize: vertical;
-    line-height: 1.6;
-}
-
-.form-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.form-hint-text {
-    display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 6px;
-}
-
-/* Buttons */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 12px 24px;
-    border-radius: 30px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-    text-decoration: none;
-}
-
-.btn-block {
-    display: flex;
-    width: 100%;
-}
-
-.btn-primary {
-    background: var(--color-primary);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(138, 112, 255, 0.3);
-}
-
-.btn-primary:hover {
-    background: #7657ff;
-    box-shadow: 0 6px 18px rgba(138, 112, 255, 0.45);
-    transform: translateY(-1px);
-}
-
-.btn-accent {
-    background: var(--color-accent);
-    color: var(--bg-base);
-    box-shadow: 0 4px 14px rgba(229, 179, 88, 0.25);
-}
-
-.btn-accent:hover {
-    background: #d8a23d;
-    box-shadow: 0 6px 18px rgba(229, 179, 88, 0.4);
-    transform: translateY(-1px);
-}
-
-.btn-dark {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-    color: var(--text-main);
-}
-
-.btn-dark:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-.btn-outline {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.15);
-    color: var(--text-main);
-}
-
-.btn-outline:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.25);
-}
-
-.btn-sm {
-    padding: 8px 16px;
-    font-size: 12px;
-}
-
-.icon-right {
-    margin-left: 2px;
+    letter-spacing: 0.8px;
+    color: var(--color-secondary);
+    font-weight: 500;
 }
 
 /* ---------------------------------------------------------
-   Screen 1: Intake Design Component
+   Screen 1: Posh Case Intake Form
    --------------------------------------------------------- */
+.workspace-view {
+    display: none;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.workspace-view.active {
+    display: flex;
+}
+
+/* Hero Section */
 .hero-banner {
+    background-color: var(--bg-gold-soft);
+    border: 1px solid var(--color-accent-light);
+    padding: 40px 48px;
+    border-radius: var(--border-radius-sm);
     position: relative;
-    background: linear-gradient(135deg, rgba(31, 23, 54, 0.7) 0%, rgba(18, 29, 61, 0.7) 100%);
-    border: 1px solid var(--border-glow);
-    border-radius: var(--border-radius-lg);
-    padding: 36px 40px;
-    margin-bottom: 32px;
     overflow: hidden;
 }
 
-.hero-glow {
-    position: absolute;
-    top: -20px;
-    left: -20px;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba(138, 112, 255, 0.3) 0%, transparent 70%);
-    filter: blur(10px);
-}
-
 .badge-premium {
-    display: inline-flex;
-    align-items: center;
-    font-size: 10px;
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 9px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
+    color: var(--color-accent);
+    border: 1px solid var(--color-accent);
     padding: 4px 10px;
-    border-radius: 30px;
-    margin-bottom: 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
 }
 
 .badge-premium.green {
-    background: rgba(16, 185, 129, 0.15);
     color: var(--color-success);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-color: var(--color-success);
 }
 
 .badge-premium.gold {
-    background: rgba(229, 179, 88, 0.15);
     color: var(--color-accent);
-    border: 1px solid rgba(229, 179, 88, 0.25);
+    border-color: var(--color-accent);
 }
 
 .hero-title {
-    font-size: 26px;
-    font-weight: 800;
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    max-width: 80%;
 }
 
 .hero-desc {
+    color: var(--color-secondary);
+    max-width: 70%;
     font-size: 14px;
-    color: var(--text-muted);
-    max-width: 800px;
-    line-height: 1.6;
 }
 
+/* Intake layout grid */
 .layout-grid-intake {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 32px;
 }
 
-/* Evidence Upload Components */
+/* Form Styles */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.form-control {
+    width: 100%;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border-dark);
+    padding: 14px 18px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-primary);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-posh);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 10px rgba(169, 146, 96, 0.15);
+}
+
+.text-area-large {
+    height: 200px;
+    resize: none;
+    line-height: 1.6;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: flex-end;
+}
+
+.form-hint-text {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    color: var(--color-secondary);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* Drag and drop zone */
 .dropzone-area {
-    border: 2px dashed rgba(255, 255, 255, 0.12);
-    border-radius: var(--border-radius-lg);
-    background: rgba(0, 0, 0, 0.15);
-    padding: 32px 20px;
+    border: 1px dashed var(--color-accent);
+    background-color: var(--bg-gold-soft);
+    border-radius: var(--border-radius-sm);
+    padding: 40px 24px;
     text-align: center;
     cursor: pointer;
-    transition: var(--transition-smooth);
+    transition: var(--transition-posh);
 }
 
 .dropzone-area:hover, .dropzone-area.dragover {
+    background-color: #ffffff;
     border-color: var(--color-primary);
-    background: rgba(138, 112, 255, 0.03);
 }
 
 .dropzone-icon {
-    color: var(--text-muted);
+    color: var(--color-accent);
     margin-bottom: 14px;
-    transition: var(--transition-smooth);
-}
-
-.dropzone-area:hover .dropzone-icon {
-    color: var(--color-primary);
-    transform: translateY(-2px);
 }
 
 .dropzone-title {
-    font-size: 14px;
+    font-family: var(--font-title);
+    font-size: 16px;
     font-weight: 600;
     margin-bottom: 4px;
 }
 
 .dropzone-sub {
-    font-size: 11px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    color: var(--color-secondary);
     margin-bottom: 16px;
 }
 
-.evidence-list-container {
-    margin-top: 24px;
-}
-
-.section-micro-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    font-weight: 700;
-}
-
+/* File list */
 .evidence-cards-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 220px;
+    gap: 8px;
+    max-height: 240px;
     overflow-y: auto;
-    padding-right: 4px;
 }
 
 .evidence-list-empty {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--color-secondary);
+    font-style: italic;
     text-align: center;
-    padding: 24px 8px;
-    border: 1px dashed rgba(255, 255, 255, 0.04);
-    border-radius: var(--border-radius-md);
+    padding: 32px 16px;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--border-radius-sm);
 }
 
 .evidence-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-md);
-    transition: var(--transition-smooth);
+    padding: 12px 18px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-posh);
 }
 
 .evidence-card:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-accent);
+    background-color: #ffffff;
 }
 
 .evidence-card-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     overflow: hidden;
 }
 
 .evidence-file-icon {
-    color: var(--text-muted);
+    color: var(--color-accent);
 }
 
 .evidence-file-details {
@@ -777,330 +758,292 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .evidence-file-name {
-    font-size: 13px;
-    font-weight: 500;
+    font-family: var(--font-title);
+    font-size: 14px;
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .evidence-file-size {
-    font-size: 10px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 9px;
+    color: var(--color-secondary);
 }
 
 .evidence-card-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .evidence-rating-pill {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 9px;
+    font-family: var(--font-sans);
+    font-size: 8px;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 2px;
 }
 
 .evidence-rating-pill.high {
-    background: rgba(16, 185, 129, 0.15);
+    background-color: rgba(30, 58, 138, 0.08);
     color: var(--color-success);
 }
+
 .evidence-rating-pill.medium {
-    background: rgba(245, 158, 11, 0.15);
+    background-color: rgba(154, 52, 18, 0.08);
     color: var(--color-warning);
 }
+
 .evidence-rating-pill.low {
-    background: rgba(239, 68, 68, 0.15);
+    background-color: rgba(127, 29, 29, 0.08);
     color: var(--color-danger);
 }
 
 .btn-remove-evidence {
     background: transparent;
     border: none;
-    color: var(--text-muted);
+    color: var(--color-secondary);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
-    transition: var(--transition-smooth);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-posh);
 }
 
 .btn-remove-evidence:hover {
     color: var(--color-danger);
-    background: rgba(239, 68, 68, 0.15);
+    background-color: rgba(127, 29, 29, 0.05);
 }
 
 /* ---------------------------------------------------------
-   Screen 2: Multi-Agent Processing Layout
+   Screen 2: Luxurious Agent Arena loading
    --------------------------------------------------------- */
 .processing-layout {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80%;
-    position: relative;
-}
-
-.arena-glow {
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(138, 112, 255, 0.1) 0%, transparent 60%);
-    filter: blur(30px);
+    min-height: 70vh;
 }
 
 .processing-card {
     width: 100%;
-    max-width: 650px;
-    padding: 32px;
+    max-width: 700px;
+    border: 1px solid var(--color-primary);
 }
 
 .processing-header {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 40px;
 }
 
-/* Pulsing Loader Spinner */
+/* Minimal luxury spinner */
 .spinner-ring {
-    position: relative;
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 16px auto;
-    border: 3px solid rgba(138, 112, 255, 0.1);
-    border-top: 3px solid var(--color-primary);
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 20px auto;
+    border: 1px solid var(--color-border);
+    border-top: 2px solid var(--color-primary);
+    border-bottom: 2px solid var(--color-accent);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-.ring-core {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(138, 112, 255, 0.15) 0%, transparent 80%);
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.processing-title {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.processing-subtitle {
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-/* Agent List Rows */
 .agent-track-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 8px;
+    margin-bottom: 32px;
 }
 
 .agent-row {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px 18px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--border-radius-md);
-    transition: var(--transition-smooth);
-    position: relative;
+    gap: 20px;
+    padding: 14px 20px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-posh);
 }
 
 .agent-avatar {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: var(--font-sans);
     font-size: 10px;
     font-weight: 800;
     color: #ffffff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+    background-color: var(--color-secondary);
 }
 
-.agent-avatar.blue { background: #3b82f6; }
-.agent-avatar.teal { background: #14b8a6; }
-.agent-avatar.purple { background: #8b5cf6; }
-.agent-avatar.red { background: #ef4444; }
-.agent-avatar.gold { background: #e5b358; }
-.agent-avatar.green { background: #10b981; }
-.agent-avatar.magenta { background: #d946ef; }
-.agent-avatar.gold-royal { background: linear-gradient(135deg, #e5b358, #8a70ff); }
-
-.agent-info {
-    flex: 1;
-}
+.agent-avatar.blue { background-color: #1e3a8a; }
+.agent-avatar.teal { background-color: #115e59; }
+.agent-avatar.purple { background-color: #5b21b6; }
+.agent-avatar.red { background-color: #7f1d1d; }
+.agent-avatar.gold { background-color: var(--color-accent); }
+.agent-avatar.green { background-color: #065f46; }
+.agent-avatar.magenta { background-color: #86198f; }
+.agent-avatar.gold-royal { background-color: #1e1e1e; }
 
 .agent-name {
-    font-size: 13px;
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .agent-status {
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--color-secondary);
 }
 
 .agent-indicator-pulse {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: var(--transition-smooth);
+    background-color: var(--color-border);
+    margin-left: auto;
 }
 
-/* Agent States styling */
 .agent-row.active {
-    background: rgba(138, 112, 255, 0.06);
-    border-color: rgba(138, 112, 255, 0.25);
+    background-color: var(--bg-gold-soft);
+    border-color: var(--color-accent);
 }
 
 .agent-row.active .agent-indicator-pulse {
-    background: var(--color-primary);
-    box-shadow: 0 0 8px var(--color-primary);
-    animation: pulse 1.2s infinite;
+    background-color: var(--color-accent);
+    animation: luxuryPulse 1.5s infinite;
 }
 
 .agent-row.completed {
-    background: rgba(16, 185, 129, 0.04);
-    border-color: rgba(16, 185, 129, 0.2);
+    background-color: #ffffff;
+    border-color: var(--color-border-dark);
 }
 
 .agent-row.completed .agent-indicator-pulse {
-    background: var(--color-success);
-    box-shadow: 0 0 6px var(--color-success);
+    background-color: var(--color-primary);
+}
+
+@keyframes luxuryPulse {
+    0% { transform: scale(0.95); opacity: 0.4; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.4; }
 }
 
 .agent-courtroom-block {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--color-border);
     padding-top: 12px;
+    margin-top: 4px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
-@keyframes pulse {
-    0% { transform: scale(0.9); opacity: 0.5; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(0.9); opacity: 0.5; }
-}
-
-/* Interactive Console Log */
+/* Console logs */
 .agent-log-console {
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--border-radius-md);
-    background: rgba(0, 0, 0, 0.4);
-    overflow: hidden;
+    border: 1px solid var(--color-border-dark);
+    background-color: #ffffff;
+    border-radius: var(--border-radius-sm);
 }
 
 .console-label {
-    background: rgba(255, 255, 255, 0.03);
-    padding: 8px 16px;
-    font-size: 10px;
+    background-color: var(--bg-accent);
+    padding: 10px 20px;
+    font-family: var(--font-sans);
+    font-size: 9px;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--text-muted);
+    letter-spacing: 1px;
+    color: var(--color-primary);
     font-weight: 700;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--color-border-dark);
 }
 
 .console-body {
-    padding: 14px 16px;
-    height: 120px;
+    padding: 16px 20px;
+    height: 140px;
     overflow-y: auto;
-    font-family: monospace;
-    font-size: 11px;
+    font-family: var(--font-mono);
+    font-size: 12px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    background-color: #ffffff;
 }
 
 .console-line {
-    line-height: 1.4;
-    white-space: pre-wrap;
+    color: var(--color-secondary);
 }
 
 .console-line.success { color: var(--color-success); }
 .console-line.warning { color: var(--color-warning); }
-.console-line.info { color: var(--color-info); }
+.console-line.info { color: var(--color-accent); }
 
 /* ---------------------------------------------------------
-   Screen 3: Courtroom Battleground Arena Styles
+   Screen 3: Courtroom Battleground Arena Styles (Posh)
    --------------------------------------------------------- */
 .court-arena-layout {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    gap: 32px;
 }
 
 .court-bench {
-    background: linear-gradient(185deg, #161621 0%, #1e1e2d 100%);
-    border: 1px solid rgba(229, 179, 88, 0.2);
-    border-radius: var(--border-radius-lg);
-    padding: 24px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border-dark);
+    padding: 32px;
     text-align: center;
-    margin-bottom: 24px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius-sm);
 }
 
 .court-crest {
     color: var(--color-accent);
-    margin-bottom: 8px;
-    filter: drop-shadow(0 0 10px rgba(229, 179, 88, 0.3));
+    margin-bottom: 12px;
 }
 
 .bench-title {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 600;
     letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .bench-subtitle {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    color: var(--color-secondary);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
+    letter-spacing: 1.5px;
+    font-weight: 600;
 }
 
 .courtroom-debate-container {
-    flex: 1;
     display: grid;
-    grid-template-columns: 200px 1fr 200px;
-    gap: 20px;
-    min-height: 350px;
-    overflow: hidden;
+    grid-template-columns: 220px 1fr 220px;
+    gap: 24px;
+    min-height: 400px;
 }
 
 .counsel-pillar {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 16px;
 }
 
 .counsel-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--border-radius-md);
+    padding: 16px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--border-radius-sm);
 }
 
 .counsel-avatar {
@@ -1110,188 +1053,285 @@ body.theme-lawfirm .segmented-option.active .option-content {
     display: flex;
     align-items: center;
     justify-content: center;
+    font-family: var(--font-sans);
     font-size: 9px;
     font-weight: 800;
     color: #ffffff;
 }
 
-.counsel-avatar.plaintiff { background: #8b5cf6; }
-.counsel-avatar.defense { background: #d946ef; }
+.counsel-avatar.plaintiff { background-color: #1e3a8a; }
+.counsel-avatar.defense { background-color: #86198f; }
 
 .counsel-name {
-    font-size: 12px;
-    font-weight: 700;
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .counsel-role {
-    font-size: 10px;
-    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 9px;
+    color: var(--color-secondary);
 }
 
-/* Center thread container */
 .debate-thread-panel {
+    border: 1px solid var(--color-border);
+    background-color: #ffffff;
+    border-radius: var(--border-radius-sm);
+    padding: 32px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 24px;
-    overflow-y: auto;
+    gap: 20px;
+    height: 450px;
 }
 
 .debate-system-card {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-md);
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--text-muted);
+    background-color: var(--bg-gold-soft);
+    border: 1px solid var(--color-accent-light);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--color-secondary);
+    border-radius: var(--border-radius-sm);
 }
 
-.debate-system-icon {
-    font-size: 18px;
-}
-
-/* Speech bubbles */
 .debate-bubble {
     max-width: 80%;
-    padding: 14px 18px;
-    border-radius: var(--border-radius-lg);
-    line-height: 1.5;
-    font-size: 13px;
-    position: relative;
-    animation: bubble-fade 0.4s ease-out forwards;
-}
-
-@keyframes bubble-fade {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    padding: 18px 24px;
+    border-radius: var(--border-radius-sm);
+    line-height: 1.6;
+    font-size: 14px;
 }
 
 .debate-bubble.plaintiff {
     align-self: flex-start;
-    background: rgba(139, 92, 246, 0.12);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-top-left-radius: 4px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid #1e3a8a;
 }
 
 .debate-bubble.defense {
     align-self: flex-end;
-    background: rgba(217, 70, 239, 0.12);
-    border: 1px solid rgba(217, 70, 239, 0.2);
-    border-top-right-radius: 4px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-right: 3px solid #86198f;
 }
 
 .debate-bubble.judge {
     align-self: center;
-    background: rgba(229, 179, 88, 0.1);
-    border: 1px solid rgba(229, 179, 88, 0.2);
-    border-radius: var(--border-radius-lg);
+    background-color: var(--bg-gold-soft);
+    border: 1px solid var(--color-accent);
     text-align: center;
     max-width: 90%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 14px rgba(169, 146, 96, 0.05);
 }
 
 .bubble-speaker {
-    font-size: 11px;
+    font-family: var(--font-sans);
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     display: block;
 }
 
-.debate-bubble.plaintiff .bubble-speaker { color: #a78bfa; }
-.debate-bubble.defense .bubble-speaker { color: #f472b6; }
+.debate-bubble.plaintiff .bubble-speaker { color: #1e3a8a; }
+.debate-bubble.defense .bubble-speaker { color: #86198f; }
 .debate-bubble.judge .bubble-speaker { color: var(--color-accent); }
 
-.courtroom-footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
 /* ---------------------------------------------------------
-   Screen 4: Split Persona Outputs (Dual Dashboards)
+   Screen 4: Split Persona Outputs (Premium serif layouts)
    --------------------------------------------------------- */
 .output-wrapper {
-    height: 100%;
-}
-
-.individual-dashboard-layout,
-.lawfirm-dashboard-layout {
     display: flex;
     flex-direction: column;
-    gap: 28px;
-    height: 100%;
+    gap: 32px;
 }
 
 .dashboard-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 18px;
+    border-bottom: 1px solid var(--color-border-dark);
+    padding-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .panel-main-title {
-    font-size: 24px;
-    font-weight: 800;
+    font-size: 32px;
+    font-weight: 700;
     letter-spacing: -0.5px;
+    margin-bottom: 4px;
 }
 
 .panel-main-subtitle {
-    font-size: 13px;
-    color: var(--text-muted);
+    font-size: 14px;
+    color: var(--color-secondary);
 }
 
-/* 4A. Docket Grid - Individual Portal */
+/* Docket Grid Structure */
 .docket-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1.3fr 1fr;
     gap: 32px;
     align-items: flex-start;
 }
 
-.docket-main-column,
-.docket-side-column {
+.docket-main-column, .docket-side-column,
+.lawfirm-main-column, .lawfirm-side-column {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 32px;
 }
 
 .parties-badge-box {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
 .party-badge {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    padding: 8px 16px;
+    font-family: var(--font-title);
+    font-size: 13px;
+    font-weight: 600;
     border-radius: var(--border-radius-sm);
-    padding: 6px 12px;
-    font-size: 12px;
 }
 
 .party-badge.danger {
-    border-color: rgba(239, 68, 68, 0.15);
-    background: rgba(239, 68, 68, 0.05);
+    background-color: rgba(127, 29, 29, 0.03);
+    border-color: rgba(127, 29, 29, 0.15);
 }
 
 .docket-facts-list {
-    padding-left: 20px;
+    padding-left: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .docket-facts-list li {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
+}
+
+/* Dynamic Fact to Clause Mapping log panel */
+.interpretations-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.interpretation-item {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+}
+
+.interpretation-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.interpretation-clause-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-accent);
+    margin-bottom: 8px;
+}
+
+.interpretation-fact {
+    font-style: italic;
+    font-size: 13px;
+    color: var(--color-secondary);
+    margin-bottom: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--color-border);
+}
+
+.interpretation-opinion {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Supreme Court Precedents precedent lists */
+.precedent-card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-accent);
+    padding: 24px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 16px;
+}
+
+.precedent-card:last-child {
+    margin-bottom: 0;
+}
+
+.precedent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--bg-accent);
+    padding-bottom: 8px;
+}
+
+.precedent-name {
+    font-family: var(--font-title);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.precedent-citation-badge {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    padding: 3px 8px;
+    border-radius: 2px;
+}
+
+.precedent-summary {
+    font-size: 13px;
+    color: var(--color-secondary);
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.precedent-relevance {
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 10px 14px;
+    background-color: var(--bg-gold-soft);
+    border: 1px solid var(--color-accent-light);
+    border-radius: var(--border-radius-sm);
+}
+
+.precedent-relevance-header {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 /* Vertical Timeline */
@@ -1308,9 +1348,9 @@ body.theme-lawfirm .segmented-option.active .option-content {
     position: absolute;
     top: 4px;
     left: 4px;
-    width: 2px;
+    width: 1px;
     height: 90%;
-    background: rgba(255, 255, 255, 0.06);
+    background-color: var(--color-border-dark);
 }
 
 .timeline-v-item {
@@ -1321,121 +1361,128 @@ body.theme-lawfirm .segmented-option.active .option-content {
     position: absolute;
     top: 4px;
     left: -24px;
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    background: var(--color-primary);
+    background-color: var(--color-primary);
     border: 2px solid var(--bg-base);
-    box-shadow: 0 0 6px var(--color-primary);
 }
 
 .timeline-v-date {
-    font-size: 11px;
+    font-family: var(--font-sans);
+    font-size: 10px;
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-accent);
     text-transform: uppercase;
     margin-bottom: 4px;
+    letter-spacing: 0.5px;
 }
 
 .timeline-v-event {
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
+/* Complaint Brief Petition code */
 .docket-brief-code {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 16px;
-    border-radius: var(--border-radius-md);
-    font-family: monospace;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    padding: 24px;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-mono);
     font-size: 12px;
-    line-height: 1.6;
+    line-height: 1.7;
     white-space: pre-wrap;
+    color: var(--color-primary);
 }
 
-.max-h-350 { max-height: 350px; }
-.max-h-400 { max-height: 400px; }
-.max-h-250 { max-height: 250px; }
-
-/* Statutes stack */
+/* Mapped Statutes Card Stacks */
 .statutes-stack {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
 .statute-pill-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--border-radius-md);
-    padding: 14px;
-}
-
-.card-highlight-border .statute-pill-card {
-    border-left: 3px solid var(--color-primary);
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    padding: 20px;
+    border-radius: var(--border-radius-sm);
 }
 
 .statute-pill-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed var(--color-border);
+    padding-bottom: 6px;
 }
 
 .statute-pill-num {
-    font-size: 13px;
+    font-family: var(--font-sans);
+    font-size: 12px;
     font-weight: 700;
+    color: var(--color-primary);
 }
 
 .statute-pill-act {
-    font-size: 9px;
+    font-family: var(--font-sans);
+    font-size: 8px;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 2px;
     font-weight: 700;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-muted);
+    background-color: var(--color-primary);
+    color: #ffffff;
+    text-transform: uppercase;
 }
 
 .statute-pill-title {
-    font-size: 12px;
+    font-family: var(--font-title);
+    font-size: 15px;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
 .statute-pill-desc {
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--color-secondary);
+    line-height: 1.5;
 }
 
 .statute-pill-punish,
 .statute-pill-route {
-    font-size: 11px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-border);
+    color: var(--color-secondary);
 }
 
-/* Evidence Audit Stack */
+/* Audit cards */
 .audit-stack {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .audit-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--border-radius-md);
+    padding: 12px 18px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
 }
 
 .audit-card-title {
-    font-size: 12px;
-    font-weight: 500;
+    font-family: var(--font-title);
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* Safety Flags Stack */
+/* Safety Warning flags */
 .safety-flags-stack {
     display: flex;
     flex-direction: column;
@@ -1443,48 +1490,39 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .safety-flag-card {
-    padding: 12px 14px;
-    background: rgba(245, 158, 11, 0.05);
-    border: 1px solid rgba(245, 158, 11, 0.15);
-    border-radius: var(--border-radius-md);
+    padding: 16px 20px;
+    background-color: rgba(154, 52, 18, 0.02);
+    border: 1px solid rgba(154, 52, 18, 0.15);
     border-left: 3px solid var(--color-warning);
+    border-radius: var(--border-radius-sm);
 }
 
 .safety-flag-card.high {
-    background: rgba(239, 68, 68, 0.05);
-    border-color: rgba(239, 68, 68, 0.15);
+    background-color: rgba(127, 29, 29, 0.02);
+    border-color: rgba(127, 29, 29, 0.15);
     border-left-color: var(--color-danger);
 }
 
 .safety-flag-title {
-    font-size: 12px;
+    font-family: var(--font-sans);
+    font-size: 11px;
     font-weight: 700;
-    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
 }
 
 .safety-flag-msg {
-    font-size: 11px;
+    font-size: 13px;
     line-height: 1.4;
+    color: var(--color-secondary);
 }
-
-.bg-amber-soft {
-    background: rgba(245, 158, 11, 0.02);
-    border-color: rgba(245, 158, 11, 0.08);
-}
-.text-warning { color: var(--color-warning); }
 
 /* 4B. Law Firm Dashboard Components */
 .lawfirm-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1.3fr 1fr;
     gap: 32px;
-}
-
-.lawfirm-main-column,
-.lawfirm-side-column {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
 }
 
 .grid-2-col {
@@ -1493,16 +1531,17 @@ body.theme-lawfirm .segmented-option.active .option-content {
     gap: 24px;
 }
 
-/* Radial Gauge Styling */
+/* Case Strength radial dial gauge */
 .probability-card {
     align-items: center;
+    border: 1px solid var(--color-border-dark);
 }
 
 .radial-gauge-container {
     position: relative;
-    width: 140px;
-    height: 140px;
-    margin-bottom: 14px;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 16px;
 }
 
 .radial-gauge-svg {
@@ -1511,16 +1550,16 @@ body.theme-lawfirm .segmented-option.active .option-content {
 
 .gauge-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.03);
-    stroke-width: 8;
+    stroke: var(--bg-accent);
+    stroke-width: 6;
 }
 
 .gauge-fill {
     fill: none;
-    stroke: var(--color-success);
-    stroke-width: 8;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s ease-out;
+    stroke: var(--color-primary);
+    stroke-width: 6;
+    stroke-linecap: square;
+    transition: stroke-dashoffset 1.5s ease-out;
 }
 
 .gauge-center-label {
@@ -1532,50 +1571,48 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .gauge-number {
-    font-family: 'Outfit', sans-serif;
-    font-size: 26px;
-    font-weight: 800;
+    font-family: var(--font-title);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-primary);
 }
 
 .gauge-text {
-    font-size: 9px;
+    font-family: var(--font-sans);
+    font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--text-muted);
-    font-weight: 500;
+    color: var(--color-secondary);
+    font-weight: 700;
 }
 
 .gauge-metric-description {
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--color-secondary);
     text-align: center;
     line-height: 1.5;
 }
 
-/* Opponent Strategy Alert premium */
+/* Opponent Strategic objection Brief */
 .opponent-alert-card {
     border-left: 4px solid var(--color-warning);
-}
-
-.border-glow-amber {
-    border-color: rgba(245, 158, 11, 0.15);
-    box-shadow: 0 0 16px rgba(245, 158, 11, 0.08);
+    border-color: rgba(154, 52, 18, 0.2);
 }
 
 .opponent-alert-banner {
     display: flex;
     gap: 16px;
     align-items: center;
-    padding: 16px 24px;
-    background: rgba(245, 158, 11, 0.04);
-    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+    padding: 20px 24px;
+    background-color: var(--bg-gold-soft);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .banner-icon-bg {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: rgba(245, 158, 11, 0.15);
+    background-color: var(--bg-accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1583,45 +1620,51 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .opponent-alert-title {
-    font-size: 13px;
-    font-weight: 800;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 1px;
     color: var(--color-warning);
+    text-transform: uppercase;
 }
 
 .opponent-alert-desc {
-    font-size: 11px;
-    color: var(--text-muted);
+    font-size: 12px;
+    color: var(--color-secondary);
 }
 
 .opponent-brief-content {
-    font-family: monospace;
-    font-size: 11px;
+    font-family: var(--font-mono);
+    font-size: 12px;
     line-height: 1.6;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 16px;
-    border-radius: var(--border-radius-md);
+    background-color: var(--bg-accent);
+    padding: 20px;
+    border-radius: var(--border-radius-sm);
     white-space: pre-wrap;
+    border: 1px solid var(--color-border);
+    color: var(--color-primary);
 }
 
 .judgment-text-box {
-    line-height: 1.6;
-    font-size: 13px;
-    background: rgba(255, 255, 255, 0.01);
-    padding: 18px;
-    border-radius: var(--border-radius-md);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    line-height: 1.7;
+    font-size: 14px;
+    background-color: var(--bg-gold-soft);
+    padding: 24px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-accent-light);
     white-space: pre-wrap;
+    color: var(--color-primary);
 }
 
 .brief-draft-box {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: var(--border-radius-md);
-    padding: 12px;
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
 }
 
 /* ---------------------------------------------------------
-   Configure Settings (BYOK) Modal Styles
+   BYOK Modal Styles Override
    --------------------------------------------------------- */
 .modal-backdrop {
     position: fixed;
@@ -1629,9 +1672,9 @@ body.theme-lawfirm .segmented-option.active .option-content {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -1647,9 +1690,13 @@ body.theme-lawfirm .segmented-option.active .option-content {
 
 .modal-dialog {
     width: 100%;
-    max-width: 500px;
-    transform: scale(0.9);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 520px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius-sm);
+    padding: 0;
+    transform: scale(0.95);
+    transition: transform 0.3s ease-out;
 }
 
 .modal-backdrop.show .modal-dialog {
@@ -1660,28 +1707,26 @@ body.theme-lawfirm .segmented-option.active .option-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    border-bottom: 1px solid var(--color-border-dark);
 }
 
 .modal-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .btn-close {
     background: transparent;
     border: none;
-    color: var(--text-muted);
+    color: var(--color-secondary);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
-    transition: var(--transition-smooth);
+    border-radius: var(--border-radius-sm);
 }
 
 .btn-close:hover {
-    color: var(--text-main);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-primary);
 }
 
 .modal-body {
@@ -1689,21 +1734,16 @@ body.theme-lawfirm .segmented-option.active .option-content {
 }
 
 .modal-desc {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: var(--color-secondary);
     line-height: 1.5;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .select-dark {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-main);
-}
-
-.select-dark option {
-    background: var(--bg-base);
-    color: var(--text-main);
+    background-color: var(--bg-accent);
+    border: 1px solid var(--color-border-dark);
+    color: var(--color-primary);
 }
 
 .modal-footer {
@@ -1711,8 +1751,8 @@ body.theme-lawfirm .segmented-option.active .option-content {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 18px;
+    border-top: 1px solid var(--color-border);
+    padding-top: 20px;
 }
 
 /* ---------------------------------------------------------
@@ -1732,7 +1772,7 @@ body.theme-lawfirm .segmented-option.active .option-content {
     body, html {
         background: #ffffff !important;
         color: #111111 !important;
-        font-family: "Inter", -apple-system, sans-serif !important;
+        font-family: var(--font-body) !important;
         font-size: 11pt !important;
         line-height: 1.5 !important;
         width: 100% !important;
@@ -1790,7 +1830,7 @@ body.theme-lawfirm .segmented-option.active .option-content {
     }
     
     /* 4. Reset Cards and Spacing */
-    .glass-card {
+    .glass-card, .card, .precedent-card {
         background: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 8px !important;
@@ -1815,7 +1855,7 @@ body.theme-lawfirm .segmented-option.active .option-content {
         gap: 0 !important;
     }
     
-    /* 5. Force Expand All Scrollable Blocks (Crucial!) */
+    /* 5. Force Expand All Scrollable Blocks */
     .scroll-styled,
     .max-h-350,
     .max-h-400,
@@ -1842,7 +1882,7 @@ body.theme-lawfirm .segmented-option.active .option-content {
         background: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
         color: #0f172a !important;
-        font-family: "Courier New", Courier, monospace !important;
+        font-family: var(--font-mono) !important;
         font-size: 10pt !important;
         padding: 15px !important;
         white-space: pre-wrap !important;
@@ -1862,29 +1902,28 @@ body.theme-lawfirm .segmented-option.active .option-content {
     .timeline-v-date {
         color: #475569 !important;
     }
-    
-    /* 8. Badge Enhancements */
-    .win-badge, .persona-tag, .evidence-rating-pill, .party-badge {
-        background: #f1f5f9 !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #0f172a !important;
-        text-shadow: none !important;
-    }
 }
 
 /* ---------------------------------------------------------
-   Responsive Tweaks
+   Responsive Design Layout Rules
    --------------------------------------------------------- */
 @media (max-width: 1200px) {
-    .layout-grid-intake {
-        grid-template-columns: 1fr;
-    }
-    .docket-grid, .lawfirm-grid {
+    .layout-grid-intake, .docket-grid, .lawfirm-grid {
         grid-template-columns: 1fr;
     }
     .grid-2-col {
         grid-template-columns: 1fr;
     }
+    .courtroom-debate-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .counsel-pillar {
+        flex-direction: row;
+        gap: 16px;
+    }
+}
+
 }
 
 @media (max-width: 900px) {
@@ -1892,6 +1931,164 @@ body.theme-lawfirm .segmented-option.active .option-content {
         grid-template-columns: 1fr;
     }
     .app-sidebar {
-        display: none; /* simple responsive fallback */
+        display: none;
     }
 }
+
+/* ---------------------------------------------------------
+   Advisory Suite Auth Screen Styles (Posh B&W Linen)
+   --------------------------------------------------------- */
+.auth-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-base);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.auth-card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-accent);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.auth-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.auth-subtitle {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-secondary);
+    line-height: 1.4;
+}
+
+.auth-role-tabs {
+    display: flex;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 32px;
+    overflow: hidden;
+}
+
+.auth-role-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-secondary);
+    cursor: pointer;
+    transition: var(--transition-posh);
+}
+
+.auth-role-tab:hover {
+    color: var(--color-primary);
+}
+
+.auth-role-tab.active {
+    background-color: var(--color-primary);
+    color: #ffffff;
+}
+
+.auth-form-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.auth-switch-prompt {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--color-secondary);
+    text-align: center;
+    margin-top: 20px;
+}
+
+.auth-switch-prompt a {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.auth-switch-prompt a:hover {
+    color: var(--color-primary);
+}
+
+/* ---------------------------------------------------------
+   Sidebar Collapse & User Sub-Tabs Overrides
+   --------------------------------------------------------- */
+.app-layout {
+.app-layout.sidebar-collapsed {
+    /* Auto handled by grid-template-columns: auto 1fr */
+}
+
+.app-layout.sidebar-collapsed .app-sidebar {
+    padding: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    border-right: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.btn-toggle-sidebar {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-toggle-sidebar:hover {
+    background-color: var(--color-border) !important;
+}
+
+.user-tab-btn {
+    transition: all 0.2s ease;
+}
+
+.user-tab-btn:hover:not(.active) {
+    background-color: var(--color-border);
+    color: var(--color-primary);
+}
+
+.statute-pill-card-mini {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    background: var(--bg-card);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-sm);
+}
+
+.statute-pill-card-mini:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
