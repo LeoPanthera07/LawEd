@@ -1,44 +1,76 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
-env/
-venv/
-.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.manifest
+*.spec
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Databases & local data
-backend/data/*.db
-backend/data/*.db-journal
-backend/data/uploads/
-*.db
-*.db-journal
+# Virtual environments
+.venv/
+venv/
+ENV/
 
-# Environment secrets
-.env
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# OS files
+# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.production
 
 # Testing
 .pytest_cache/
-.coverage
 htmlcov/
+.coverage
+coverage.xml
+*.cover
+*.db
 
-# Editor files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.swp
+# Node
+node_modules/
+.next/
+out/
+.vercel
+
+# Byte-compiled
+*.pyc
+
+# Distribution
+*.tar.gz
+*.whl
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+
+# Claude
+.claude/
